@@ -1,0 +1,33 @@
+version: '3'
+services:
+  postgres:
+    image: postgres
+    container_name: my-postgres-container
+    environment:
+      POSTGRES_DB: smartchargedb
+      POSTGRES_USER: smartchargeuser
+      POSTGRES_PASSWORD: smartchargepassword
+    ports:
+      - "5432:5432"
+    networks:
+      - pg-network
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: my-pgadmin-container
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@smartcharge.com
+      PGADMIN_DEFAULT_PASSWORD: smartchargepassword
+    ports:
+      - "8080:80"
+    networks:
+      - pg-network
+
+networks:
+  pg-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
