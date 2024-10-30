@@ -8,8 +8,8 @@ public class GroupEntity : BaseEntity
 {
     private readonly List<ChargeStationEntity> _chargeStations = [];
 
-    public Guid Id { get; set; }
-    public string Name { get; set; }
+    public Guid Id { get; private set; }
+    public string Name { get; private set; }
     public int CapacityInAmps { get; private set; }
     public IReadOnlyCollection<ChargeStationEntity> ChargeStations => _chargeStations.ToList(); //Todo AsReadonly?
     
@@ -30,8 +30,6 @@ public class GroupEntity : BaseEntity
         //Todo: Can add chargeStation with connectors
         _chargeStations.Add(chargeStationEntity);
     }
-    
-    public void UpdateName(string newName) => Name = newName;
     
     // public void UpdateCapacity(int newCapacity)
     // {

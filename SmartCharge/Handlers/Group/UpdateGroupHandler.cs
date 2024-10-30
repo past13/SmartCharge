@@ -1,14 +1,13 @@
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using SmartCharge.Commands;
 using SmartCharge.Commands.Group;
 using SmartCharge.Domain.Entities;
 using SmartCharge.Repository;
 
-namespace SmartCharge.Handlers;
+namespace SmartCharge.Handlers.Group;
 
-public class UpdateGroupHandler : IRequestHandler<CreateGroupCommand, GroupEntity>
+public class UpdateGroupHandler : IRequestHandler<UpdateGroupCommand, GroupEntity>
 {
     private readonly IGroupRepository _groupRepository;
     public UpdateGroupHandler(IGroupRepository groupRepository)
@@ -16,7 +15,7 @@ public class UpdateGroupHandler : IRequestHandler<CreateGroupCommand, GroupEntit
         _groupRepository = groupRepository;
     }
     
-    public Task<GroupEntity> Handle(CreateGroupCommand request, CancellationToken cancellationToken)
+    public Task<GroupEntity> Handle(UpdateGroupCommand request, CancellationToken cancellationToken)
     {
         
         

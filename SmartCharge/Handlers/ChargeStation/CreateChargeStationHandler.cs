@@ -3,11 +3,12 @@ using System.Threading.Tasks;
 using MediatR;
 using SmartCharge.Commands.ChargeStation;
 using SmartCharge.Domain.Entities;
+using SmartCharge.Domain.Response;
 using SmartCharge.Repository;
 
 namespace SmartCharge.Handlers.ChargeStation;
 
-public class CreateChargeStationHandler : IRequestHandler<CreateChargeStationCommand, ChargeStationEntity>
+public class CreateChargeStationHandler : IRequestHandler<CreateChargeStationCommand, ApiResponse<ChargeStationEntity>>
 {
     private readonly IGroupRepository _groupRepository;
     private readonly IChargeStationRepository _chargeStationRepository;
@@ -20,24 +21,32 @@ public class CreateChargeStationHandler : IRequestHandler<CreateChargeStationCom
         _groupRepository = groupRepository;
     }
     
-    public async Task<ChargeStationEntity> Handle(CreateChargeStationCommand command, CancellationToken cancellationToken)
+    public async Task<ApiResponse<ChargeStationEntity>> Handle(CreateChargeStationCommand command, CancellationToken cancellationToken)
     {
+        var response = new ApiResponse<ChargeStationEntity>();
+
         var group = await _groupRepository.GetGroupById(command.GroupId);
         if (group == null)
         {
-            //Todo: if group dont exist cant create station
-            return null;
+            response.Error = $"A Group does not exists.";
+            return response;
+        }
+
+        var chargeStationName = command.Name.Trim();
+        var chargeStationNameExist = await _chargeStationRepository.IsNameExist(chargeStationName);
+        if (chargeStationNameExist)
+        {
+            response.Error = $"A ChargeStation with the name '{chargeStationName}' already exists.";
+            return response; 
         }
         
-        //Todo: validate is just one chargeStation
-        //Todo: validate if chargeStation not exist same name
-        
-        var chargeStation = ChargeStationEntity.Create(command.Name);
+        var chargeStation = ChargeStationEntity.Create(chargeStationName);
         group.AddChargeStation(chargeStation);
-
-        // chargeStation.AddConnector();
         
-        await _groupRepository.AddGroup(group);
-        return chargeStation;
+        await _groupRepository.UpdateGroup(group);
+        
+        response.Data = chargeStation;
+        
+        return response;
     }
 }

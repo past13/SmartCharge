@@ -11,7 +11,9 @@ namespace SmartCharge.Repository;
 
 public interface IChargeStationRepository
 {
+    Task<bool> IsNameExist(string name);
     Task<ChargeStationEntity> AddChargeStation(ChargeStationEntity chargeStation);
+    Task UpdateChargeStation(ChargeStationEntity chargeStation);
     Task<ChargeStationEntity?> GetChargeStationById(Guid id);
     Task DeleteChargeStationById(Guid id);
     Task<IEnumerable<ChargeStationDto>> GetAllChargeStations();
@@ -30,6 +32,14 @@ public class ChargeStationRepository : IChargeStationRepository
         _mapper = mapper;
     }
     
+    public async Task<bool> IsNameExist(string name)
+    {
+        var isNameValid = await _context.ChargeStations
+            .AnyAsync(g => g.Name.ToLower() == name.ToLower());
+        
+        return isNameValid;
+    }
+    
     public async Task<IEnumerable<ChargeStationDto>> GetAllChargeStations()
     {
         var result = await _context.ChargeStations
@@ -44,6 +54,12 @@ public class ChargeStationRepository : IChargeStationRepository
         await _context.SaveChangesAsync();
         
         return chargeStation;
+    }
+
+    public async Task UpdateChargeStation(ChargeStationEntity chargeStation)
+    {
+        _context.ChargeStations.Update(chargeStation);
+        await _context.SaveChangesAsync();
     }
 
     public async Task<ChargeStationEntity?> GetChargeStationById(Guid id)

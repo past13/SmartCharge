@@ -15,35 +15,36 @@ public class ApplicationDbContext : DbContext
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<GroupEntity>()
-            .HasKey(g => g.Id);
+        modelBuilder.Entity<GroupEntity>(entity =>
+        {
+            entity.HasKey(g => g.Id);
 
-        modelBuilder.Entity<GroupEntity>()
-            .Property(g => g.RowVersion)
-            .IsRowVersion();
+            entity.Property(g => g.RowVersion)
+                .IsRowVersion();
+        });
         
-        modelBuilder.Entity<ChargeStationEntity>()
-            .HasKey(cs => cs.Id);
-
-        modelBuilder.Entity<ChargeStationEntity>()
-            .Property(g => g.RowVersion)
-            .IsRowVersion();
+        modelBuilder.Entity<ChargeStationEntity>(entity =>
+        {
+            entity.HasKey(g => g.Id);
+           
+            entity.Property(g => g.RowVersion)
+                .IsRowVersion();
+            
+            entity.HasOne(cs => cs.GroupEntity)
+                .WithMany(g => g.ChargeStations)
+                .HasForeignKey(cs => cs.GroupId);
+        });
         
-        modelBuilder.Entity<ChargeStationEntity>()
-            .HasOne(cs => cs.GroupEntity)
-            .WithMany(g => g.ChargeStations)
-            .HasForeignKey(cs => cs.GroupId);
-        
-        modelBuilder.Entity<ConnectorEntity>()
-            .HasKey(g => g.Id);
-
-        modelBuilder.Entity<ConnectorEntity>()
-            .Property(g => g.RowVersion)
-            .IsRowVersion();
-        
-        modelBuilder.Entity<ConnectorEntity>()
-            .HasOne(cs => cs.ChargeStation)
-            .WithMany(g => g.Connectors)
-            .HasForeignKey(cs => cs.ChargeStationId);
+        modelBuilder.Entity<ConnectorEntity>(entity =>
+        {
+            entity.HasKey(g => g.Id);
+            
+            entity.Property(g => g.RowVersion)
+                .IsRowVersion();
+            
+            entity.HasOne(cs => cs.ChargeStation)
+                .WithMany(g => g.Connectors)
+                .HasForeignKey(cs => cs.ChargeStationId);
+        });
     }
 }

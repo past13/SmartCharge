@@ -17,11 +17,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Remove="Migrations\20241029142846_initial.Designer.cs" />
-      <Compile Remove="Migrations\20241029144920_initial.Designer.cs" />
-    </ItemGroup>
-
-    <ItemGroup>
       <Folder Include="Migrations\" />
     </ItemGroup>
 

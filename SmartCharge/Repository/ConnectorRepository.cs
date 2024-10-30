@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,9 @@ namespace SmartCharge.Repository;
 
 public interface IConnectorRepository
 {
+    Task<bool> IsNameExist(string name);
+    Task<IEnumerable<ConnectorEntity>> GetAllConnectorsById(List<Guid> ids);
+    
     Task<ConnectorEntity> AddConnector(ConnectorEntity connectorEntity);
     Task<ConnectorEntity?> GetConnectorById(Guid id);
     Task DeleteConnectorById(Guid id);
@@ -28,6 +32,23 @@ public class ConnectorRepository : IConnectorRepository
     {
         _context = context;
         _mapper = mapper;
+    }
+    
+    public async Task<bool> IsNameExist(string name)
+    {
+        var isNameValid = await _context.Connector
+            .AnyAsync(g => g.Name.ToLower() == name.ToLower());
+        
+        return isNameValid;
+    }
+    
+    public async Task<IEnumerable<ConnectorEntity>> GetAllConnectorsById(List<Guid> ids)
+    {
+        var result = await _context.Connector
+            .Where(c => ids.Contains(c.Id))
+            .ToListAsync();
+        
+        return result;
     }
     
     public async Task<IEnumerable<ConnectorDto>> GetAllConnectors()

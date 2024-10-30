@@ -1,10 +1,11 @@
 using MediatR;
 using SmartCharge.Domain.Entities;
 using SmartCharge.Domain.Requests;
+using SmartCharge.Domain.Response;
 
 namespace SmartCharge.Commands.Group;
 
-public class CreateGroupCommand : IRequest<GroupEntity>
+public class CreateGroupCommand : IRequest<ApiResponse<GroupEntity>>
 {
     public string Name { get; set; }
     public int CapacityInAmps { get; set; }
