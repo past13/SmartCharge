@@ -2,6 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using SmartCharge.Commands;
+using SmartCharge.Commands.Group;
 using SmartCharge.Domain.Entities;
 using SmartCharge.Repository;
 

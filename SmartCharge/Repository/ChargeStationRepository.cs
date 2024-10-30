@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using SmartCharge.DataLayer;
+using SmartCharge.Domain.DTOs;
 using SmartCharge.Domain.Entities;
-using SmartCharge.DTOs;
 
 namespace SmartCharge.Repository;
 
@@ -14,7 +14,7 @@ public interface IChargeStationRepository
     Task<ChargeStationEntity> AddChargeStation(ChargeStationEntity chargeStation);
     Task<ChargeStationEntity?> GetChargeStationById(Guid id);
     Task DeleteChargeStationById(Guid id);
-    Task<IEnumerable<ChargeStationDTO>> GetAllChargeStations();
+    Task<IEnumerable<ChargeStationDto>> GetAllChargeStations();
 }
 
 public class ChargeStationRepository : IChargeStationRepository
@@ -30,12 +30,12 @@ public class ChargeStationRepository : IChargeStationRepository
         _mapper = mapper;
     }
     
-    public async Task<IEnumerable<ChargeStationDTO>> GetAllChargeStations()
+    public async Task<IEnumerable<ChargeStationDto>> GetAllChargeStations()
     {
         var result = await _context.ChargeStations
             .ToListAsync();
         
-        return _mapper.Map<IEnumerable<ChargeStationDTO>>(result);
+        return _mapper.Map<IEnumerable<ChargeStationDto>>(result);
     }
     
     public async Task<ChargeStationEntity> AddChargeStation(ChargeStationEntity chargeStation)

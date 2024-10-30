@@ -1,7 +1,7 @@
 using System;
 using MediatR;
 
-namespace SmartCharge.Commands;
+namespace SmartCharge.Commands.ChargeStation;
 
 public class DeleteChargeStationCommand : IRequest
 {

@@ -1,4 +1,4 @@
-namespace SmartCharge.Requests;
+namespace SmartCharge.Domain.Requests;
 
 public class ChargeStationRequest
 {

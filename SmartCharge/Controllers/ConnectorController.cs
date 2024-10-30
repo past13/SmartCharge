@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SmartCharge.Commands;
+using SmartCharge.Commands.Connector;
 using SmartCharge.Repository;
 
 namespace SmartCharge.Controllers;

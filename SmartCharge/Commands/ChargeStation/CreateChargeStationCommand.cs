@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using MediatR;
 using SmartCharge.Domain.Entities;
-using SmartCharge.Requests;
+using SmartCharge.Domain.Requests;
 
-namespace SmartCharge.Commands;
+namespace SmartCharge.Commands.ChargeStation;
 
 public class CreateChargeStationCommand: IRequest<ChargeStationEntity>
 {

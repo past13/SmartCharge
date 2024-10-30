@@ -1,7 +1,7 @@
 using System;
 using MediatR;
 
-namespace SmartCharge.Commands;
+namespace SmartCharge.Commands.Group;
 
 public class DeleteGroupCommand : IRequest
 {

@@ -1,12 +1,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using Microsoft.AspNetCore.Http.HttpResults;
-using SmartCharge.Commands;
+using SmartCharge.Commands.ChargeStation;
 using SmartCharge.Domain.Entities;
 using SmartCharge.Repository;
 
-namespace SmartCharge.Handlers;
+namespace SmartCharge.Handlers.ChargeStation;
 
 public class CreateChargeStationHandler : IRequestHandler<CreateChargeStationCommand, ChargeStationEntity>
 {

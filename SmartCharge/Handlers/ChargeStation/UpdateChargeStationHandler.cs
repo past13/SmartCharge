@@ -1,11 +1,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using SmartCharge.Commands;
+using SmartCharge.Commands.ChargeStation;
 using SmartCharge.Domain.Entities;
 using SmartCharge.Repository;
 
-namespace SmartCharge.Handlers;
+namespace SmartCharge.Handlers.ChargeStation;
 
 public class UpdateChargeStationHandler : IRequestHandler<UpdateChargeStationCommand, ChargeStationEntity>
 {

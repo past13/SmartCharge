@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using SmartCharge.Domain;
 using SmartCharge.Domain.Entities;
 
 namespace SmartCharge.DataLayer;

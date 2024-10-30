@@ -1,7 +1,6 @@
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
-namespace SmartCharge.Requests;
+namespace SmartCharge.Domain.Requests;
 
 public class GroupRequest
 {

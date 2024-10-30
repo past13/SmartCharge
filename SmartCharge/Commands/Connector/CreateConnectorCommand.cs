@@ -1,12 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using MediatR;
-using SmartCharge.Domain;
 using SmartCharge.Domain.Entities;
-using SmartCharge.Requests;
+using SmartCharge.Domain.Requests;
 
-namespace SmartCharge.Commands;
+namespace SmartCharge.Commands.Connector;
 
 public class CreateConnectorCommand : IRequest<ConnectorEntity>
 {

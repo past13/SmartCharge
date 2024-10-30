@@ -1,8 +1,8 @@
 using System;
 
-namespace SmartCharge.DTOs;
+namespace SmartCharge.Domain.DTOs;
 
-public class ConnectorDTO
+public class ConnectorDto
 {
     public Guid Id { get; set; }
     public string Name { get; set; }

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using SmartCharge.DataLayer;
+using SmartCharge.Domain.DTOs;
 using SmartCharge.Domain.Entities;
 
 namespace SmartCharge.Repository;
@@ -14,7 +15,7 @@ public interface IGroupRepository
     Task<GroupEntity> AddGroup(GroupEntity group);
     Task<GroupEntity?> GetGroupById(Guid id);
     Task DeleteGroupById(Guid id);
-    Task<IEnumerable<GroupDTO>> GetAllGroups();
+    Task<IEnumerable<GroupDto>> GetAllGroups();
 }
 
 public class GroupRepository : IGroupRepository
@@ -33,13 +34,13 @@ public class GroupRepository : IGroupRepository
         _chargeStationRepository = chargeStationRepository;
     }
     
-    public async Task<IEnumerable<GroupDTO>> GetAllGroups()
+    public async Task<IEnumerable<GroupDto>> GetAllGroups()
     {
         var groups = await _context.Groups
             .Include(x => x.ChargeStations)
             .ToListAsync();
         
-        return _mapper.Map<IEnumerable<GroupDTO>>(groups);
+        return _mapper.Map<IEnumerable<GroupDto>>(groups);
     }
     
     public async Task<GroupEntity> AddGroup(GroupEntity group)

@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using SmartCharge.DataLayer;
+using SmartCharge.Domain.DTOs;
 using SmartCharge.Domain.Entities;
-using SmartCharge.DTOs;
 
 namespace SmartCharge.Repository;
 
@@ -14,7 +14,7 @@ public interface IConnectorRepository
     Task<ConnectorEntity> AddConnector(ConnectorEntity connectorEntity);
     Task<ConnectorEntity?> GetConnectorById(Guid id);
     Task DeleteConnectorById(Guid id);
-    Task<IEnumerable<ConnectorDTO>> GetAllConnectors();
+    Task<IEnumerable<ConnectorDto>> GetAllConnectors();
 }
 
 public class ConnectorRepository : IConnectorRepository
@@ -30,12 +30,12 @@ public class ConnectorRepository : IConnectorRepository
         _mapper = mapper;
     }
     
-    public async Task<IEnumerable<ConnectorDTO>> GetAllConnectors()
+    public async Task<IEnumerable<ConnectorDto>> GetAllConnectors()
     {
         var result = await _context.Connector
             .ToListAsync();
         
-        return _mapper.Map<IEnumerable<ConnectorDTO>>(result);
+        return _mapper.Map<IEnumerable<ConnectorDto>>(result);
     }
     
     public async Task<ConnectorEntity> AddConnector(ConnectorEntity connector)
