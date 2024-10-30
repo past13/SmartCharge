@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace SmartCharge.Domain.Entities;
 
-public class GroupEntity 
+public class GroupEntity : BaseEntity
 {
     private readonly List<ChargeStationEntity> _chargeStations = [];
 
@@ -14,7 +14,7 @@ public class GroupEntity
     public int CapacityInAmps { get; private set; }
     
     [Timestamp]
-    public uint Xmin { get; set; } 
+    public byte[] RowVersion { get; set; }
     
     public IReadOnlyCollection<ChargeStationEntity> ChargeStations => _chargeStations.ToList(); //Todo AsReadonly?
     
@@ -38,7 +38,6 @@ public class GroupEntity
     
     public void AddChargeStation(ChargeStationEntity chargeStationEntity)
     {
-        //Todo: Can add chargeStation with connectors
         _chargeStations.Add(chargeStationEntity);
     }
     

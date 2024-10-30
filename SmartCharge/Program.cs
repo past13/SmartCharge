@@ -6,7 +6,6 @@ using Microsoft.Extensions.Hosting;
 using Scalar.AspNetCore;
 using SmartCharge;
 using SmartCharge.DataLayer;
-using SmartCharge.Handlers;
 using SmartCharge.Handlers.ChargeStation;
 using SmartCharge.Handlers.Connector;
 using SmartCharge.Handlers.Group;
@@ -40,7 +39,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    options.UseNpgsql("Host=localhost;Port=5432;Database=smartchargedb;Username=smartchargeuser;Password=smartchargepassword;");
+    options.UseSqlServer("Server=localhost;Database=smartchargedb;User Id=sa;Password=Asd123456;TrustServerCertificate=True");
 });
 
 var app = builder.Build();

@@ -91,6 +91,7 @@ public class CreateGroupHandlerTests : DatabaseDependentTestBase
 
         // Assert
         Assert.True(result.IsSuccess);
+        Assert.Equal(1, result.Data.ChargeStations.Count);
     }
     
     [Fact]

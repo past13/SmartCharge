@@ -43,10 +43,8 @@ public class UpdateGroupHandler : IRequestHandler<UpdateGroupCommand, ApiRespons
 
         group.Update(groupName, command.CapacityInAmps);
         
-        await _groupRepository.UpdateGroup(group);
+        var result = await _groupRepository.UpdateGroup(group);
         
-        response.Data = group;
-        
-        return response;
+        return result;
     }
 }

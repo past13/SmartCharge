@@ -4,14 +4,6 @@ using SmartCharge.Domain.Entities;
 
 namespace SmartCharge.DataLayer;
 
-public class AwesomeEntityConfiguration : IEntityTypeConfiguration<GroupEntity>
-{
-    public void Configure(EntityTypeBuilder<GroupEntity> builder)
-    {
-        builder.UseXminAsConcurrencyToken();
-    }
-}
-
 public class ApplicationDbContext : DbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
@@ -20,34 +12,20 @@ public class ApplicationDbContext : DbContext
     public DbSet<ChargeStationEntity> ChargeStations { get; set; }
     public DbSet<ConnectorEntity> Connector { get; set; }
     
-    
-    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<GroupEntity>().HasKey(g => g.Id);
+        modelBuilder.Entity<GroupEntity>(entity =>
+        {
+            entity.HasKey(g => g.Id);
         
-        modelBuilder.ApplyConfiguration(new AwesomeEntityConfiguration());
+            entity.Property(e => e.RowVersion)
+                .IsRowVersion();
+            
+            entity.HasMany(g => g.ChargeStations)
+                .WithOne(cs => cs.GroupEntity)
+                .HasForeignKey(cs => cs.GroupId);
+        });
         
-        
-        
-        modelBuilder.Entity<GroupEntity>()
-            .HasMany(g => g.ChargeStations)
-            .WithOne(cs => cs.GroupEntity)
-            .HasForeignKey(cs => cs.GroupId);
-        
-        // modelBuilder.Entity<GroupEntity>(entity =>
-        // {
-        //     entity.HasKey(g => g.Id);
-        //
-        //     entity.Property(g => g.RowVersion)
-        //         .IsRowVersion()
-        //         .HasColumnType("bytea");
-        //     
-        //     entity.HasMany(g => g.ChargeStations)
-        //         .WithOne(cs => cs.GroupEntity)
-        //         .HasForeignKey(cs => cs.GroupId);
-        // });
-        //
         modelBuilder.Entity<ChargeStationEntity>(entity =>
         {
             entity.HasKey(g => g.Id);

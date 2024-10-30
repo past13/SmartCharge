@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using SmartCharge.DataLayer;
 using SmartCharge.Domain.DTOs;
 using SmartCharge.Domain.Entities;
+using SmartCharge.Domain.Response;
 
 namespace SmartCharge.Repository;
 
@@ -14,7 +15,7 @@ public interface IGroupRepository
 {
     Task<bool> IsNameExist(string name);
     Task<GroupEntity> AddGroup(GroupEntity group);
-    Task UpdateGroup(GroupEntity group);
+    Task<ApiResponse<GroupEntity>> UpdateGroup(GroupEntity group);
     Task<GroupEntity?> GetGroupById(Guid id);
     Task DeleteGroupById(Guid id);
     Task<IEnumerable<GroupDto>> GetAllGroups();
@@ -62,15 +63,24 @@ public class GroupRepository : IGroupRepository
         return group;
     }
 
-    public async Task UpdateGroup(GroupEntity group)
+    public async Task<ApiResponse<GroupEntity>> UpdateGroup(GroupEntity group)
     {
         try
         {
             await _context.SaveChangesAsync();
+            
+            return new ApiResponse<GroupEntity>
+            {
+                Data = group,
+            };
         }
-        catch (DbUpdateConcurrencyException ex)
+        catch (DbUpdateConcurrencyException)
         {
-            throw; // Re-throw if it's not handled
+            return new ApiResponse<GroupEntity>
+            {
+                Data = null,
+                Error = "The group was modified by another user since you loaded it. Please reload the data and try again."
+            };
         }
     }
 
