@@ -64,8 +64,14 @@ public class GroupRepository : IGroupRepository
 
     public async Task UpdateGroup(GroupEntity group)
     {
-        _context.Groups.Update(group);
-        await _context.SaveChangesAsync();
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            throw; // Re-throw if it's not handled
+        }
     }
 
     public async Task<GroupEntity?> GetGroupById(Guid id)

@@ -1,16 +1,21 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
 namespace SmartCharge.Domain.Entities;
 
-public class GroupEntity : BaseEntity
+public class GroupEntity 
 {
     private readonly List<ChargeStationEntity> _chargeStations = [];
 
     public Guid Id { get; private set; }
     public string Name { get; private set; }
     public int CapacityInAmps { get; private set; }
+    
+    [Timestamp]
+    public uint Xmin { get; set; } 
+    
     public IReadOnlyCollection<ChargeStationEntity> ChargeStations => _chargeStations.ToList(); //Todo AsReadonly?
     
     public static GroupEntity Create(string name, int capacityInAmps)
@@ -23,6 +28,12 @@ public class GroupEntity : BaseEntity
         };
 
         return group;
+    }
+
+    public void Update(string name, int capacityInAmps)
+    {
+        Name = name;
+        CapacityInAmps = capacityInAmps;
     }
     
     public void AddChargeStation(ChargeStationEntity chargeStationEntity)

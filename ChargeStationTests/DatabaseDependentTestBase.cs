@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SmartCharge.DataLayer;
 
-namespace TestProject1;
+namespace ChargeStationTests;
 
 public abstract class DatabaseDependentTestBase : TestBase, IDisposable 
 {

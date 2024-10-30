@@ -12,7 +12,7 @@ namespace SmartCharge.Repository;
 public interface IChargeStationRepository
 {
     Task<bool> IsNameExist(string name);
-    Task<ChargeStationEntity> AddChargeStation(ChargeStationEntity chargeStation);
+    Task<ChargeStationEntity> AddChargeStation(Guid groupId, ChargeStationEntity chargeStation);
     Task UpdateChargeStation(ChargeStationEntity chargeStation);
     Task<ChargeStationEntity?> GetChargeStationById(Guid id);
     Task DeleteChargeStationById(Guid id);
@@ -48,8 +48,10 @@ public class ChargeStationRepository : IChargeStationRepository
         return _mapper.Map<IEnumerable<ChargeStationDto>>(result);
     }
     
-    public async Task<ChargeStationEntity> AddChargeStation(ChargeStationEntity chargeStation)
+    public async Task<ChargeStationEntity> AddChargeStation(Guid groupId, ChargeStationEntity chargeStation)
     {
+        chargeStation.GroupId = groupId;
+        
         _context.ChargeStations.Add(chargeStation);
         await _context.SaveChangesAsync();
         

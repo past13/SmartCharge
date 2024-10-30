@@ -11,14 +11,13 @@ public class CreateChargeStationCommand: IRequest<ApiResponse<ChargeStationEntit
 {
     public Guid GroupId { get; set; }
     public string Name { get; set; }
-    public int MaxCurrentInAmps { get; set; }
 
-    public List<ConnectorRequest> Connectors { get; set; } 
+    public List<ConnectorRequest> Connectors = new List<ConnectorRequest>(); 
     
-    public CreateChargeStationCommand(string name, int maxCurrentInAmps, List<ConnectorRequest> connectors)
+    public CreateChargeStationCommand(Guid groupId, string name, List<ConnectorRequest> connectors)
     {
+        GroupId = groupId;
         Name = name;
-        MaxCurrentInAmps = maxCurrentInAmps;
         Connectors = connectors;
     }
 }

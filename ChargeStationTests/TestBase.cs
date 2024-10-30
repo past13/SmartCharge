@@ -1,10 +1,10 @@
 using AutoFixture;
 
-namespace TestProject1;
+namespace ChargeStationTests;
 
 public abstract class TestBase 
 {
-    protected Fixture Fixture { get; set; }
+    private Fixture Fixture { get; set; }
     protected TestBase() 
     {
         Fixture = new Fixture();

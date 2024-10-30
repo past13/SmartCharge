@@ -41,9 +41,8 @@ public class CreateChargeStationHandler : IRequestHandler<CreateChargeStationCom
         }
         
         var chargeStation = ChargeStationEntity.Create(chargeStationName);
-        group.AddChargeStation(chargeStation);
         
-        await _groupRepository.UpdateGroup(group);
+        await _chargeStationRepository.AddChargeStation(command.GroupId, chargeStation);
         
         response.Data = chargeStation;
         

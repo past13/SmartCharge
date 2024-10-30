@@ -10,7 +10,7 @@ public class UpdateChargeStationCommand : IRequest<ChargeStationEntity>
 {
     public string Name { get; set; }
     public Guid GroupId  { get; set; }
-    public List<ConnectorRequest> Connectors { get; set; } 
+    public List<ConnectorRequest> Connectors; 
     
     public UpdateChargeStationCommand(string name, List<ConnectorRequest> connectors)
     {

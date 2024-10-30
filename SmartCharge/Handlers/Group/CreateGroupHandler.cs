@@ -35,8 +35,22 @@ public class CreateGroupHandler : IRequestHandler<CreateGroupCommand, ApiRespons
             response.Error = $"A Group with the name '{groupName}' already exists.";
             return response; 
         }
-        
+
         var group = GroupEntity.Create(groupName, command.CapacityInAmps);
+        
+        if (command.ChargeStation != null)
+        {
+            var chargeStationName = command.ChargeStation.Name.Trim();
+            var chargeStationExist = await _chargeStationRepository.IsNameExist(chargeStationName);
+            if (chargeStationExist)
+            {
+                response.Error = $"A ChargeStation with the name '{chargeStationName}' already exists.";
+                return response; 
+            }
+            
+            var chargeStation = ChargeStationEntity.Create(chargeStationName);
+            group.AddChargeStation(chargeStation);
+        }
         
         await _groupRepository.AddGroup(group);
         
