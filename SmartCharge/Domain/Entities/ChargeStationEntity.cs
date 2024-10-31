@@ -17,18 +17,45 @@ public class ChargeStationEntity : BaseEntity
 
     public static ChargeStationEntity Create(string name)
     {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new ArgumentException("Name cannot be null or empty.", nameof(name));
+        }
+        
         var chargeStation = new ChargeStationEntity
         {
             Id = Guid.NewGuid(),
-            Name = name
+            Name = name,
         };
 
         return chargeStation;
     }
     
+    public void Update(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new ArgumentException("Name cannot be null or empty.", nameof(name));
+        }
+        
+        Name = name;
+    }
+    
     public void AddConnector(ConnectorEntity connector)
     {
-        //Todo: Can add chargeStation with connectors
+        if (_connectors.Count > 5)
+        {
+            throw new InvalidOperationException("A charge station cannot have more than 5 connectors.");
+        }
+
+        if (_connectors.Any(c => c.Id == connector.Id))
+        {
+            throw new InvalidOperationException($"A connector with ID {connector.Id} already exists in this charge station.");
+        }
+
+        var nextConnectorNumber = _connectors.Count + 1;
+        connector.UpdateConnectorNumber(nextConnectorNumber);
+        
         _connectors.Add(connector);
     }
 }

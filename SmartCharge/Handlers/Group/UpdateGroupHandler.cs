@@ -21,7 +21,7 @@ public class UpdateGroupHandler : IRequestHandler<UpdateGroupCommand, ApiRespons
         var response = new ApiResponse<GroupEntity>();
 
         var groupName = command.Name.Trim();
-        var groupNameExist = await _groupRepository.IsNameExist(command.Name);
+        var groupNameExist = await _groupRepository.IsNameExist(groupName);
         if (groupNameExist)
         {
             response.Error = $"A Group with the name '{groupName}' already exists.";
@@ -34,17 +34,16 @@ public class UpdateGroupHandler : IRequestHandler<UpdateGroupCommand, ApiRespons
             response.Error = $"A Group does not exists.";
             return response; 
         }
-        
+
+        group.Update(groupName, command.CapacityInAmps);
+
         // foreach (var chargeStationRequest in command.ChargeStations)
         // {
         //     var chargeStation = ChargeStationEntity.Create(chargeStationRequest.Name);
         //     group.AddChargeStation(chargeStation);
         // }
-
-        group.Update(groupName, command.CapacityInAmps);
         
         var result = await _groupRepository.UpdateGroup(group);
-        
         return result;
     }
 }

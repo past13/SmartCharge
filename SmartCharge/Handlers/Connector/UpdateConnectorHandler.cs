@@ -3,11 +3,12 @@ using System.Threading.Tasks;
 using MediatR;
 using SmartCharge.Commands.Connector;
 using SmartCharge.Domain.Entities;
+using SmartCharge.Domain.Response;
 using SmartCharge.Repository;
 
 namespace SmartCharge.Handlers.Connector;
 
-public class UpdateConnectorHandler : IRequestHandler<UpdateConnectorCommand, ConnectorEntity>
+public class UpdateConnectorHandler : IRequestHandler<UpdateConnectorCommand, ApiResponse<ConnectorEntity>>
 {
     private readonly IChargeStationRepository _chargeStationRepository;
     private readonly IConnectorRepository _connectorRepository;
@@ -17,10 +18,29 @@ public class UpdateConnectorHandler : IRequestHandler<UpdateConnectorCommand, Co
         _connectorRepository = connectorRepository;
     }
     
-    public Task<ConnectorEntity> Handle(UpdateConnectorCommand request, CancellationToken cancellationToken)
+    public async Task<ApiResponse<ConnectorEntity>> Handle(UpdateConnectorCommand command, CancellationToken cancellationToken)
     {
+        var response = new ApiResponse<ConnectorEntity>();
+
+        var connectorName = command.Name.Trim();
+        var connectorNameExist = await _connectorRepository.IsNameExist(connectorName);
+        if (connectorNameExist)
+        {
+            response.Error = $"A Connector with the name '{connectorName}' already exists.";
+            return response; 
+        }
         
+        var connector = await _connectorRepository.GetConnectorById(command.Id);
+        if (connector == null)
+        {
+            response.Error = $"A Connector does not exists.";
+            return response; 
+        }
         
-        throw new System.NotImplementedException();
+        connector.Update(connectorName);
+
+        //Todo: update many
+        var result = await _connectorRepository.UpdateConnector(connector);
+        return result;
     }
 }

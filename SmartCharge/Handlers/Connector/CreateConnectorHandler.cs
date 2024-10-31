@@ -44,7 +44,7 @@ public class CreateConnectorHandler : IRequestHandler<CreateConnectorCommand, Ap
         var connectorNameExist = await _connectorRepository.IsNameExist(connectorName);
         if (connectorNameExist)
         {
-            response.Error = $"A Connector with the name '{connectorName}' already exists.";
+            response.Error = $"A Connector with the name {connectorName} already exists.";
             return response; 
         }
         

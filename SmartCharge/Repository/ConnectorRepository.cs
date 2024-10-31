@@ -7,18 +7,19 @@ using Microsoft.EntityFrameworkCore;
 using SmartCharge.DataLayer;
 using SmartCharge.Domain.DTOs;
 using SmartCharge.Domain.Entities;
+using SmartCharge.Domain.Response;
 
 namespace SmartCharge.Repository;
 
 public interface IConnectorRepository
 {
     Task<bool> IsNameExist(string name);
-    Task<IEnumerable<ConnectorEntity>> GetAllConnectorsById(List<Guid> ids);
-    
     Task<ConnectorEntity> AddConnector(ConnectorEntity connectorEntity);
+    Task<ApiResponse<ConnectorEntity>> UpdateConnector(ConnectorEntity connectorEntity);
     Task<ConnectorEntity?> GetConnectorById(Guid id);
-    Task DeleteConnectorById(Guid id);
+    Task<ApiResponse<ConnectorEntity>> DeleteConnectorById(Guid id);
     Task<IEnumerable<ConnectorDto>> GetAllConnectors();
+    Task<IEnumerable<ConnectorEntity>> GetAllConnectorsById(List<Guid> ids);
 }
 
 public class ConnectorRepository : IConnectorRepository
@@ -67,20 +68,61 @@ public class ConnectorRepository : IConnectorRepository
         return connector;
     }
 
+    public async Task<ApiResponse<ConnectorEntity>> UpdateConnector(ConnectorEntity connectorEntity)
+    {
+        try
+        {
+            await _context.SaveChangesAsync();
+            
+            return new ApiResponse<ConnectorEntity>
+            {
+                Data = connectorEntity,
+            };
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return new ApiResponse<ConnectorEntity>
+            {
+                Data = null,
+                Error = "The Connector was modified by another user since you loaded it. Please reload the data and try again."
+            };
+        }
+    }
+
     public async Task<ConnectorEntity?> GetConnectorById(Guid id)
     {
         return await _context.Connector.FindAsync(id);
     }
     
-    public async Task DeleteConnectorById(Guid id)
+    public async Task<ApiResponse<ConnectorEntity>> DeleteConnectorById(Guid id)
     {
+        var response = new ApiResponse<ConnectorEntity>();
+
         var connector = await _context.Connector.FindAsync(id);
         if (connector == null)
         {
-            return;
+            response.Error = $"A Connector with the Id '{id}' does not exists.";
+            return response;
         }
         
         _context.Connector.Remove(connector);
-        await _context.SaveChangesAsync();
+        
+        try
+        {
+            await _context.SaveChangesAsync();
+            
+            return new ApiResponse<ConnectorEntity>
+            {
+                Data = null,
+            };
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return new ApiResponse<ConnectorEntity>
+            {
+                Data = null,
+                Error = "The Entity was modified by another user since you loaded it. Please reload the data and try again."
+            };
+        }
     }
 }

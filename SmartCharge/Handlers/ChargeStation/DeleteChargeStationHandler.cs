@@ -1,13 +1,14 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using SmartCharge.Commands.ChargeStation;
+using SmartCharge.Domain.Entities;
+using SmartCharge.Domain.Response;
 using SmartCharge.Repository;
 
 namespace SmartCharge.Handlers.ChargeStation;
 
-public class DeleteChargeStationHandler : IRequestHandler<DeleteChargeStationCommand>, IRequest<Unit>
+public class DeleteChargeStationHandler : IRequestHandler<DeleteChargeStationCommand, ApiResponse<ChargeStationEntity>>
 {
     private readonly IChargeStationRepository _chargeStationRepository;
     public DeleteChargeStationHandler(IChargeStationRepository chargeStationRepository)
@@ -15,16 +16,9 @@ public class DeleteChargeStationHandler : IRequestHandler<DeleteChargeStationCom
         _chargeStationRepository = chargeStationRepository;
     }
     
-    public async Task<Unit> Handle(DeleteChargeStationCommand request, CancellationToken cancellationToken)
+    public async Task<ApiResponse<ChargeStationEntity>> Handle(DeleteChargeStationCommand command, CancellationToken cancellationToken)
     {
-        var chargeStation = await _chargeStationRepository.GetChargeStationById(request.Id);
-        if (chargeStation == null)
-        {
-            throw new InvalidOperationException($"ChargeStation with ID {request.Id} not found.");
-        }
-        
-        await _chargeStationRepository.DeleteChargeStationById(request.Id);
-        
-        return Unit.Value;
+        var result = await _chargeStationRepository.DeleteChargeStationById(command.Id);
+        return result;
     }
 }

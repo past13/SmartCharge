@@ -1,14 +1,14 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using SmartCharge.Commands.Group;
+using SmartCharge.Domain.Entities;
 using SmartCharge.Domain.Response;
 using SmartCharge.Repository;
 
 namespace SmartCharge.Handlers.Group;
 
-public class DeleteGroupHandler : IRequestHandler<DeleteGroupCommand, ApiResponse<Unit>>
+public class DeleteGroupHandler : IRequestHandler<DeleteGroupCommand, ApiResponse<GroupEntity>>
 {
     private readonly IGroupRepository _groupRepository;
     public DeleteGroupHandler(IGroupRepository groupRepository)
@@ -16,18 +16,18 @@ public class DeleteGroupHandler : IRequestHandler<DeleteGroupCommand, ApiRespons
         _groupRepository = groupRepository;
     }
     
-    public async Task<ApiResponse<Unit>> Handle(DeleteGroupCommand request, CancellationToken cancellationToken)
+    public async Task<ApiResponse<GroupEntity>> Handle(DeleteGroupCommand command, CancellationToken cancellationToken)
     {
-        var response = new ApiResponse<Unit>();
+        var response = new ApiResponse<GroupEntity>();
 
-        var group = await _groupRepository.GetGroupById(request.Id);
-        if (group == null)
+        var groupExist = await _groupRepository.GetGroupById(command.Id);
+        if (groupExist == null)
         {
-            response.Error = $"A Group with the Id '{request.Id}' does not exists.";
+            response.Error = $"A Group with the Id {command.Id} does not exists.";
             return response;
         }
-
-        await _groupRepository.DeleteGroupById(request.Id);
+        
+        response = await _groupRepository.DeleteGroupById(command.Id);
         
         return response;
     }

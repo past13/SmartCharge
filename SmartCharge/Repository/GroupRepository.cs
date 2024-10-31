@@ -17,7 +17,7 @@ public interface IGroupRepository
     Task<GroupEntity> AddGroup(GroupEntity group);
     Task<ApiResponse<GroupEntity>> UpdateGroup(GroupEntity group);
     Task<GroupEntity?> GetGroupById(Guid id);
-    Task DeleteGroupById(Guid id);
+    Task<ApiResponse<GroupEntity>> DeleteGroupById(Guid id);
     Task<IEnumerable<GroupDto>> GetAllGroups();
 }
 
@@ -89,28 +89,35 @@ public class GroupRepository : IGroupRepository
         return await _context.Groups.FindAsync(id);
     }
     
-    public async Task DeleteGroupById(Guid id)
+    public async Task<ApiResponse<GroupEntity>> DeleteGroupById(Guid id)
     {
         var group = await _context.Groups
             .Include(g => g.ChargeStations)
             .FirstOrDefaultAsync(g => g.Id == id);
-
-        if (group == null)
-        {
-            return;
-        }
         
         foreach (var chargeStation in group.ChargeStations.ToList())
         {
-            // foreach (var connector in chargeStation.Connectors.ToList())
-            // {
-            //     await _connectorRepository.Delete(connector);
-            // }
-            
             await _chargeStationRepository.DeleteChargeStationById(chargeStation.Id);
         }
         
         _context.Groups.Remove(group);
-        await _context.SaveChangesAsync();
+        
+        try
+        {
+            await _context.SaveChangesAsync();
+            
+            return new ApiResponse<GroupEntity>
+            {
+                Data = null,
+            };
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return new ApiResponse<GroupEntity>
+            {
+                Data = null,
+                Error = "The Entity was modified by another user since you loaded it. Please reload the data and try again."
+            };
+        }
     }
 }

@@ -12,7 +12,7 @@ public class CreateChargeStationCommand: IRequest<ApiResponse<ChargeStationEntit
     public Guid GroupId { get; set; }
     public string Name { get; set; }
 
-    public List<ConnectorRequest> Connectors = new List<ConnectorRequest>(); 
+    public List<ConnectorRequest> Connectors; 
     
     public CreateChargeStationCommand(Guid groupId, string name, List<ConnectorRequest> connectors)
     {

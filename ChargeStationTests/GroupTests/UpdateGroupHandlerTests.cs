@@ -1,31 +1,29 @@
 using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using Moq;
 using SmartCharge.Commands.Group;
-using SmartCharge.DataLayer;
 using SmartCharge.Domain.Entities;
 using SmartCharge.Domain.Requests;
 using SmartCharge.Handlers.Group;
 using SmartCharge.Repository;
 
-namespace ChargeStationTests;
+namespace ChargeStationTests.GroupTests;
 
 public class UpdateGroupHandlerTests : DatabaseDependentTestBase
 {
     private readonly GroupRepository _groupRepository;
     private readonly Mock<IMapper> _mapper;
     private readonly IChargeStationRepository _chargeStationRepository;
-    private readonly Mock<IConnectorRepository> _connectorRepository;
+    private readonly IConnectorRepository _connectorRepository;
 
     private readonly UpdateGroupHandler _handler;
     
     public UpdateGroupHandlerTests()
     {
         _mapper = new Mock<IMapper>();
-        _chargeStationRepository = new ChargeStationRepository(InMemoryDb, _mapper.Object);
-        
+        _connectorRepository = new ConnectorRepository(InMemoryDb, _mapper.Object);
+
+        _chargeStationRepository = new ChargeStationRepository(InMemoryDb, _mapper.Object, _connectorRepository);
         _groupRepository = new GroupRepository(InMemoryDb, _mapper.Object, _chargeStationRepository);
-        _connectorRepository = new Mock<IConnectorRepository>();
         
         _handler = new UpdateGroupHandler(_groupRepository);
     }
@@ -49,19 +47,24 @@ public class UpdateGroupHandlerTests : DatabaseDependentTestBase
     }
     
     [Fact]
-    public async Task Handle_ShouldReturnSucces_WhenGroupExists()
+    public async Task Handle_ShouldReturnSuccess_WhenGroupExists()
     {
         var group = GroupEntity.Create("Test Group 1", 1);
 
         InMemoryDb.Groups.Add(group);
         await InMemoryDb.SaveChangesAsync();
-        
+
+        var expectedName = "Test Group 2";
+        var capacityInAmps = 2;
+
         // Act
-        var notExist = new UpdateGroupCommand(group.Id, "Test Group 2", 2, []);
+        var notExist = new UpdateGroupCommand(group.Id, expectedName, capacityInAmps, []);
         var result = await _handler.Handle(notExist, CancellationToken.None);
 
         // Assert
         Assert.True(result.IsSuccess);
+        Assert.Equal(expectedName, InMemoryDb.Groups.First().Name);
+        Assert.Equal(capacityInAmps, InMemoryDb.Groups.First().CapacityInAmps);
     }
 
     [Fact]

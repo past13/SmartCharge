@@ -20,6 +20,11 @@ public class GroupEntity : BaseEntity
     
     public static GroupEntity Create(string name, int capacityInAmps)
     {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new ArgumentException("Name cannot be null or empty.", nameof(name));
+        }
+        
         var group = new GroupEntity
         {
             Id = Guid.NewGuid(),
@@ -32,6 +37,11 @@ public class GroupEntity : BaseEntity
 
     public void Update(string name, int capacityInAmps)
     {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new ArgumentException("Name cannot be null or empty.", nameof(name));
+        }
+        
         Name = name;
         CapacityInAmps = capacityInAmps;
     }

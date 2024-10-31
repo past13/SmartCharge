@@ -6,26 +6,27 @@ using SmartCharge.Domain.Requests;
 using SmartCharge.Handlers.Group;
 using SmartCharge.Repository;
 
-namespace ChargeStationTests;
+namespace ChargeStationTests.GroupTests;
 
 public class CreateGroupHandlerTests : DatabaseDependentTestBase
 {
     private readonly GroupRepository _groupRepository;
     private readonly Mock<IMapper> _mapper;
     private readonly IChargeStationRepository _chargeStationRepository;
-    private readonly Mock<IConnectorRepository> _connectorRepository;
+    private readonly IConnectorRepository _connectorRepository;
 
     private readonly CreateGroupHandler _handler;
     
     public CreateGroupHandlerTests()
     {
         _mapper = new Mock<IMapper>();
-        _chargeStationRepository = new ChargeStationRepository(InMemoryDb, _mapper.Object);
+        
+        _connectorRepository = new ConnectorRepository(InMemoryDb, _mapper.Object);
+        _chargeStationRepository = new ChargeStationRepository(InMemoryDb, _mapper.Object, _connectorRepository);
         
         _groupRepository = new GroupRepository(InMemoryDb, _mapper.Object, _chargeStationRepository);
-        _connectorRepository = new Mock<IConnectorRepository>();
         
-        _handler = new CreateGroupHandler(_groupRepository, _chargeStationRepository, _connectorRepository.Object);
+        _handler = new CreateGroupHandler(_groupRepository, _chargeStationRepository, _connectorRepository);
     }
     
     [Fact]
@@ -66,24 +67,17 @@ public class CreateGroupHandlerTests : DatabaseDependentTestBase
     [Fact]
     public async Task Handle_ShouldReturnSuccess_WhenNewChargeStationNotExists()
     {
-        var chargeStation1 = new ChargeStationRequest
-        {
-            Name = "Test ChargeStation 1",
-        };
+        var chargeStation1 = new ChargeStationRequest { Name = "Test ChargeStation 1" };
         
-        var command = new CreateGroupCommand("Test Group", 1, chargeStation1);
-        var group = GroupEntity.Create(command.Name, command.CapacityInAmps);
-
+        var group = GroupEntity.Create("Test Group", 1);
         var chargeStationEntity = ChargeStationEntity.Create(chargeStation1.Name);
+        
         group.AddChargeStation(chargeStationEntity);
         
         InMemoryDb.Groups.Add(group);
         await InMemoryDb.SaveChangesAsync();
         
-        var chargeStation2 = new ChargeStationRequest
-        {
-            Name = "Test ChargeStation 2",
-        };
+        var chargeStation2 = new ChargeStationRequest { Name = "Test ChargeStation 2" };
         
         // Act
         var notExist = new CreateGroupCommand("Test Group 1", 1, chargeStation2);
@@ -91,21 +85,18 @@ public class CreateGroupHandlerTests : DatabaseDependentTestBase
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.Equal(1, result.Data.ChargeStations.Count);
+        Assert.Equal(2, InMemoryDb.Groups.Count());
+        Assert.Equal(2, InMemoryDb.ChargeStations.Count());
     }
     
     [Fact]
     public async Task Handle_ShouldReturnError_WhenChargeStationAlreadyExists()
     {
-        var chargeStation = new ChargeStationRequest
-        {
-            Name = "Test ChargeStation",
-        };
+        var chargeStation = new ChargeStationRequest { Name = "Test ChargeStation" };
         
-        var command = new CreateGroupCommand("Test Group", 1, chargeStation);
-        var group = GroupEntity.Create(command.Name, command.CapacityInAmps);
-
+        var group = GroupEntity.Create("Test Group", 1);
         var chargeStationEntity = ChargeStationEntity.Create(chargeStation.Name);
+        
         group.AddChargeStation(chargeStationEntity);
         
         InMemoryDb.Groups.Add(group);

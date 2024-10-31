@@ -28,7 +28,7 @@ public class CreateChargeStationHandler : IRequestHandler<CreateChargeStationCom
         var group = await _groupRepository.GetGroupById(command.GroupId);
         if (group == null)
         {
-            response.Error = $"A Group does not exists.";
+            response.Error = $"A Group with Id {command.GroupId} does not exists.";
             return response;
         }
 
@@ -36,11 +36,17 @@ public class CreateChargeStationHandler : IRequestHandler<CreateChargeStationCom
         var chargeStationNameExist = await _chargeStationRepository.IsNameExist(chargeStationName);
         if (chargeStationNameExist)
         {
-            response.Error = $"A ChargeStation with the name '{chargeStationName}' already exists.";
+            response.Error = $"A ChargeStation with the name {chargeStationName} already exists.";
             return response; 
         }
         
         var chargeStation = ChargeStationEntity.Create(chargeStationName);
+
+        foreach (var connectorRequest in command.Connectors)
+        {
+            var connector = ConnectorEntity.Create(connectorRequest.Name, connectorRequest.CapacityInAmps);
+            chargeStation.AddConnector(connector);
+        }
         
         await _chargeStationRepository.AddChargeStation(command.GroupId, chargeStation);
         

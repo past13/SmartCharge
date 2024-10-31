@@ -42,6 +42,13 @@ public class ApplicationDbContext : DbContext
         {
             entity.HasKey(g => g.Id);
             
+            entity.Property(c => c.ConnectorNumber)
+                .IsRequired()
+                .HasConversion<int>();
+            
+            entity.HasIndex(c => new { c.ChargeStationId, c.ConnectorNumber })
+                .IsUnique();
+
             entity.Property(g => g.RowVersion)
                 .IsRowVersion();
             
