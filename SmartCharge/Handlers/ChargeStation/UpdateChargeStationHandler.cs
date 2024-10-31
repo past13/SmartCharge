@@ -1,56 +1,81 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using SmartCharge.Commands.ChargeStation;
 using SmartCharge.Domain.Entities;
 using SmartCharge.Domain.Response;
 using SmartCharge.Repository;
+using SmartCharge.UnitOfWork;
 
 namespace SmartCharge.Handlers.ChargeStation;
 
 public class UpdateChargeStationHandler : IRequestHandler<UpdateChargeStationCommand, Result<ChargeStationEntity>>
 {
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IGroupRepository _groupRepository;
     private readonly IChargeStationRepository _chargeStationRepository;
 
     public UpdateChargeStationHandler(
-        IGroupRepository groupRepository,
+        IUnitOfWork unitOfWork,
+        
         IChargeStationRepository chargeStationRepository
         )
     {
-        _groupRepository = groupRepository;
+        _unitOfWork = unitOfWork;
         _chargeStationRepository = chargeStationRepository;
     }
     
     public async Task<Result<ChargeStationEntity>> Handle(UpdateChargeStationCommand command, CancellationToken cancellationToken)
     {
-        var response = new Result<ChargeStationEntity>();
+        await _unitOfWork.BeginTransactionAsync();
 
-        var chargeStationName = command.Name.Trim();
-        var chargeStationExist = await _chargeStationRepository.IsNameExist(chargeStationName);
-        if (chargeStationExist)
+        try
         {
-            response.Error = $"A ChargeStation with the name '{chargeStationName}' already exists.";
-            return response; 
-        }
+            var chargeStationName = command.Name.Trim();
+            var chargeStationNameExist = await _chargeStationRepository.IsNameExist(chargeStationName);
+            if (chargeStationNameExist)
+            {
+                throw new ArgumentException($"A ChargeStation with the name {chargeStationName} already exists.");
+            }
         
-        var chargeStation = await _chargeStationRepository.GetChargeStationById(command.Id);
-        if (chargeStation == null)
+            var chargeStation = await _chargeStationRepository.GetChargeStationById(command.Id);
+            if (chargeStation is null)
+            {
+                throw new ArgumentException($"A ChargeStation with Id {command.Id} does not exists.");
+            }
+            
+            var group = await _groupRepository.GetGroupById(command.GroupId);
+            if (group is null)
+            {
+                throw new ArgumentException($"A Group with Id {command.GroupId} does not exists.");
+            }
+        
+            chargeStation.UpdateName(chargeStationName);
+            chargeStation.UpdateGroup(group.Id);
+            
+            group.UpdateCapacity();
+            
+            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.CommitAsync();
+        
+            return Result<ChargeStationEntity>.Success(null);
+        }
+        catch (ArgumentException ex)
         {
-            response.Error = $"A ChargeStation does not exists.";
-            return response; 
+            await _unitOfWork.RollbackAsync();
+            return Result<ChargeStationEntity>.Failure(ex.Message);
         }
-        
-        chargeStation.Update(chargeStationName);
-
-        // foreach (var connectorRequest in command.Connectors)
-        // {
-        //     var connectorEntity = ConnectorEntity.Create(connectorRequest.Name, connectorRequest.CapacityInAmps);
-        //     chargeStation.AddConnector(connectorEntity);
-        // }
-        
-        //Todo: update many
-        var result = await _chargeStationRepository.UpdateChargeStation(chargeStation);
-        return result;
+        catch (DbUpdateConcurrencyException)
+        {
+            await _unitOfWork.RollbackAsync();
+            return Result<ChargeStationEntity>.Failure("The ChargeStation was modified by another user since you loaded it. Please reload the data and try again.");
+        }
+        catch (Exception ex)
+        {
+            await _unitOfWork.RollbackAsync();
+            return Result<ChargeStationEntity>.Failure(ex.Message);
+        }
     }
 }

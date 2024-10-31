@@ -1,16 +1,17 @@
 using AutoMapper;
 using Moq;
 using SmartCharge.Commands.ChargeStation;
-using SmartCharge.Commands.Group;
 using SmartCharge.Domain.Entities;
 using SmartCharge.Domain.Requests;
 using SmartCharge.Handlers.ChargeStation;
 using SmartCharge.Repository;
+using SmartCharge.UnitOfWork;
 
 namespace ChargeStationTests.ChargeStationTests;
 
 public class CreateChargeStationHandlerTests : DatabaseDependentTestBase
 {
+    private readonly IUnitOfWork _unitOfWork;
     private readonly GroupRepository _groupRepository;
     private readonly Mock<IMapper> _mapper;
     private readonly IChargeStationRepository _chargeStationRepository;
@@ -20,13 +21,14 @@ public class CreateChargeStationHandlerTests : DatabaseDependentTestBase
     
     public CreateChargeStationHandlerTests()
     {
+        _unitOfWork = new UnitOfWork(InMemoryDb);
         _mapper = new Mock<IMapper>();
         _connectorRepository = new ConnectorRepository(InMemoryDb, _mapper.Object);
         _chargeStationRepository = new ChargeStationRepository(InMemoryDb, _mapper.Object, _connectorRepository);
         
         _groupRepository = new GroupRepository(InMemoryDb, _mapper.Object, _chargeStationRepository);
         
-        _handler = new CreateChargeStationHandler(_chargeStationRepository, _groupRepository);
+        _handler = new CreateChargeStationHandler(_unitOfWork, _chargeStationRepository, _groupRepository);
     }
     
     [Fact]
@@ -56,9 +58,15 @@ public class CreateChargeStationHandlerTests : DatabaseDependentTestBase
         
         InMemoryDb.Groups.Add(groupEntity);
         await InMemoryDb.SaveChangesAsync();
+
+        var chargeStation = new ConnectorRequest
+        {
+            Name = "Test Connector",
+            MaxCapacityInAmps = 1
+        };
         
         // Act
-        var notExist = new CreateChargeStationCommand(groupEntity.Id, "Test ChargeStation 2", []);
+        var notExist = new CreateChargeStationCommand(groupEntity.Id, "Test ChargeStation 2", [chargeStation]);
         var result = await _handler.Handle(notExist, CancellationToken.None);
 
         // Assert

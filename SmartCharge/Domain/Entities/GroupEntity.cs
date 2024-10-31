@@ -54,6 +54,11 @@ public class GroupEntity : BaseEntity
         _chargeStations.Add(chargeStationEntity);
     }
     
+    public void RemoveChargeStation(ChargeStationEntity chargeStationEntity)
+    {
+        _chargeStations.Remove(chargeStationEntity);
+    }
+    
     public void UpdateCapacity()
     {
         CapacityInAmps = _chargeStations.Sum(cs => cs.GetTotalCurrentLoad());

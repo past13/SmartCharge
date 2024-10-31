@@ -13,7 +13,6 @@ namespace SmartCharge.Handlers.Group;
 public class CreateGroupHandler : IRequestHandler<CreateGroupCommand, Result<GroupEntity>>
 {
     private readonly IUnitOfWork _unitOfWork;
-    
     private readonly IGroupRepository _groupRepository;
     private readonly IChargeStationRepository _chargeStationRepository;
     public CreateGroupHandler(
@@ -29,7 +28,6 @@ public class CreateGroupHandler : IRequestHandler<CreateGroupCommand, Result<Gro
     public async Task<Result<GroupEntity>> Handle(CreateGroupCommand command, CancellationToken cancellationToken)
     {
         await _unitOfWork.BeginTransactionAsync();
-        var response = new Result<GroupEntity>();
         
         try
         {
@@ -74,24 +72,18 @@ public class CreateGroupHandler : IRequestHandler<CreateGroupCommand, Result<Gro
             await _unitOfWork.SaveChangesAsync();
             await _unitOfWork.CommitAsync();
 
-            response.Data = group;
-
-            return response;
+            return Result<GroupEntity>.Success(group);
         }
         catch (ArgumentException ex)
         {
             await _unitOfWork.RollbackAsync();
-            // return Result<Group>.Failure("An error occurred while creating the group. Please try again later.");
-
-            response.Error = ex.Message;
-            return response;
+            return Result<GroupEntity>.Failure(ex.Message);
         }
         catch (Exception ex)
         {
             await _unitOfWork.RollbackAsync();
             
-            response.Error = ex.Message;
-            return response;
+            return Result<GroupEntity>.Failure(ex.Message);
         }
     }
 }

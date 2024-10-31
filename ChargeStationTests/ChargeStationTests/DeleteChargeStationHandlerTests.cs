@@ -4,12 +4,15 @@ using SmartCharge.Commands.ChargeStation;
 using SmartCharge.Domain.Entities;
 using SmartCharge.Handlers.ChargeStation;
 using SmartCharge.Repository;
+using SmartCharge.UnitOfWork;
 
 namespace ChargeStationTests.ChargeStationTests;
 
 public class DeleteChargeStationHandlerTests : DatabaseDependentTestBase
 {
+    private readonly IUnitOfWork _unitOfWork;
     private readonly Mock<IMapper> _mapper;
+    private readonly IGroupRepository _groupRepository;
     private readonly IChargeStationRepository _chargeStationRepository;
     private readonly IConnectorRepository _connectorRepository;
 
@@ -17,12 +20,14 @@ public class DeleteChargeStationHandlerTests : DatabaseDependentTestBase
     
     public DeleteChargeStationHandlerTests()
     {
+        _unitOfWork = new UnitOfWork(InMemoryDb);
         _mapper = new Mock<IMapper>();
         
         _connectorRepository = new ConnectorRepository(InMemoryDb, _mapper.Object);
         _chargeStationRepository = new ChargeStationRepository(InMemoryDb, _mapper.Object, _connectorRepository);
-        
-        _handler = new DeleteChargeStationHandler(_chargeStationRepository);
+        _groupRepository = new GroupRepository(InMemoryDb, _mapper.Object, _chargeStationRepository);
+
+        _handler = new DeleteChargeStationHandler(_unitOfWork, _groupRepository, _chargeStationRepository);
     }
     
     [Fact]
@@ -37,7 +42,7 @@ public class DeleteChargeStationHandlerTests : DatabaseDependentTestBase
         await InMemoryDb.SaveChangesAsync();
         
         // Act
-        var notExist = new DeleteChargeStationCommand(Guid.NewGuid());
+        var notExist = new DeleteChargeStationCommand(Guid.NewGuid(), groupEntity.Id);
         var result = await _handler.Handle(notExist, CancellationToken.None);
 
         // Assert
@@ -57,7 +62,7 @@ public class DeleteChargeStationHandlerTests : DatabaseDependentTestBase
         await InMemoryDb.SaveChangesAsync();
         
         // Act
-        var exist = new DeleteChargeStationCommand(chargeStationEntity.Id);
+        var exist = new DeleteChargeStationCommand(chargeStationEntity.Id, groupEntity.Id);
         var result = await _handler.Handle(exist, CancellationToken.None);
 
         // Assert
@@ -83,7 +88,7 @@ public class DeleteChargeStationHandlerTests : DatabaseDependentTestBase
         var existFirstChargeStationId = groupEntity.ChargeStations.First().Id; 
         
         // Act
-        var exist = new DeleteChargeStationCommand(existFirstChargeStationId);
+        var exist = new DeleteChargeStationCommand(existFirstChargeStationId, groupEntity.Id);
         var result = await _handler.Handle(exist, CancellationToken.None);
 
         // Assert

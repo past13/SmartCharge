@@ -14,10 +14,9 @@ namespace SmartCharge.Repository;
 public interface IConnectorRepository
 {
     Task<bool> IsNameExist(string name);
-    Task<ConnectorEntity> AddConnector(ConnectorEntity connectorEntity);
-    Task<Result<ConnectorEntity>> UpdateConnector(ConnectorEntity connectorEntity);
+    Task AddConnector(ConnectorEntity connectorEntity);
     Task<ConnectorEntity?> GetConnectorById(Guid id);
-    Task<Result<ConnectorEntity>> DeleteConnectorById(Guid id);
+    Task DeleteConnectorById(Guid id);
     Task<IEnumerable<ConnectorDto>> GetAllConnectors();
     Task<IEnumerable<ConnectorEntity>> GetAllConnectorsById(List<Guid> ids);
 }
@@ -60,33 +59,9 @@ public class ConnectorRepository : IConnectorRepository
         return _mapper.Map<IEnumerable<ConnectorDto>>(result);
     }
     
-    public async Task<ConnectorEntity> AddConnector(ConnectorEntity connector)
+    public async Task AddConnector(ConnectorEntity connector)
     {
         _context.Connector.Add(connector);
-        await _context.SaveChangesAsync();
-        
-        return connector;
-    }
-
-    public async Task<Result<ConnectorEntity>> UpdateConnector(ConnectorEntity connectorEntity)
-    {
-        try
-        {
-            await _context.SaveChangesAsync();
-            
-            return new Result<ConnectorEntity>
-            {
-                Data = connectorEntity,
-            };
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            return new Result<ConnectorEntity>
-            {
-                Data = null,
-                Error = "The Connector was modified by another user since you loaded it. Please reload the data and try again."
-            };
-        }
     }
 
     public async Task<ConnectorEntity?> GetConnectorById(Guid id)
@@ -94,35 +69,19 @@ public class ConnectorRepository : IConnectorRepository
         return await _context.Connector.FindAsync(id);
     }
     
-    public async Task<Result<ConnectorEntity>> DeleteConnectorById(Guid id)
+    public async Task DeleteConnectorById(Guid id)
     {
-        var response = new Result<ConnectorEntity>();
+        var connectors = await _context.ChargeStations
+            .Include(cs => cs.Connectors)
+            .SelectMany(cs => cs.Connectors)
+            .ToListAsync();
 
-        var connector = await _context.Connector.FindAsync(id);
-        if (connector == null)
+        if (connectors.Count <= 1)
         {
-            response.Error = $"A Connector with the Id '{id}' does not exists.";
-            return response;
+            throw new ArgumentException($"Connector can not be deleted ChargeStation required at least one connector.");
         }
-        
+
+        var connector = connectors.First(c => c.Id == id);
         _context.Connector.Remove(connector);
-        
-        try
-        {
-            await _context.SaveChangesAsync();
-            
-            return new Result<ConnectorEntity>
-            {
-                Data = null,
-            };
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            return new Result<ConnectorEntity>
-            {
-                Data = null,
-                Error = "The Entity was modified by another user since you loaded it. Please reload the data and try again."
-            };
-        }
     }
 }

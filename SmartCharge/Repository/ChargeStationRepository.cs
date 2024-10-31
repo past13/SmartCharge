@@ -14,10 +14,10 @@ namespace SmartCharge.Repository;
 public interface IChargeStationRepository
 {
     Task<bool> IsNameExist(string name);
-    Task<ChargeStationEntity> AddChargeStation(Guid groupId, ChargeStationEntity chargeStation);
-    Task<Result<ChargeStationEntity>> UpdateChargeStation(ChargeStationEntity chargeStation);
+    Task<bool> IsChargeStationExist(Guid id);
+    Task AddChargeStation(ChargeStationEntity chargeStation);
     Task<ChargeStationEntity?> GetChargeStationById(Guid id);
-    Task<Result<ChargeStationEntity>> DeleteChargeStationById(Guid id);
+    Task DeleteChargeStationById(Guid id);
     Task<IEnumerable<ChargeStationDto>> GetAllChargeStations();
 }
 
@@ -45,6 +45,11 @@ public class ChargeStationRepository : IChargeStationRepository
         return isNameValid;
     }
     
+    public async Task<bool> IsChargeStationExist(Guid id)
+    {
+        return await _context.ChargeStations.AnyAsync(cs => cs.Id == id);
+    }
+    
     public async Task<IEnumerable<ChargeStationDto>> GetAllChargeStations()
     {
         var result = await _context.ChargeStations
@@ -53,54 +58,24 @@ public class ChargeStationRepository : IChargeStationRepository
         return _mapper.Map<IEnumerable<ChargeStationDto>>(result);
     }
     
-    public async Task<ChargeStationEntity> AddChargeStation(Guid groupId, ChargeStationEntity chargeStation)
+    public async Task AddChargeStation(ChargeStationEntity chargeStation)
     {
-        chargeStation.UpdateGroup(groupId);
-        
         _context.ChargeStations.Add(chargeStation);
-        await _context.SaveChangesAsync();
-        
-        return chargeStation;
-    }
-
-    public async Task<Result<ChargeStationEntity>> UpdateChargeStation(ChargeStationEntity chargeStation)
-    {
-        try
-        {
-            await _context.SaveChangesAsync();
-            
-            return new Result<ChargeStationEntity>
-            {
-                Data = null,
-            };
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            return new Result<ChargeStationEntity>
-            {
-                Data = null,
-                Error = "The ChargeStation was modified by another user since you loaded it. Please reload the data and try again."
-            };
-        }
     }
 
     public async Task<ChargeStationEntity?> GetChargeStationById(Guid id)
     {
         return await _context.ChargeStations
+            .Include(cs => cs.Connectors)
             .FirstOrDefaultAsync(cs => cs.Id == id);
     }
     
-    public async Task<Result<ChargeStationEntity>> DeleteChargeStationById(Guid id)
+    public async Task DeleteChargeStationById(Guid id)
     {
-        var response = new Result<ChargeStationEntity>();
-
-        var chargeStation = await GetChargeStationById(id);
-        if (chargeStation == null)
-        {
-            response.Error = $"A ChargeStation with the Id {id} does not exists.";
-            return response;
-        }
-
+        var chargeStation = await _context.ChargeStations
+            .Include(g => g.Connectors)
+            .FirstOrDefaultAsync(g => g.Id == id);
+        
         var connectors = chargeStation.Connectors.ToList();
         foreach (var connector in connectors)
         {
@@ -108,23 +83,5 @@ public class ChargeStationRepository : IChargeStationRepository
         }
         
         _context.ChargeStations.Remove(chargeStation);
-        
-        try
-        {
-            await _context.SaveChangesAsync();
-            
-            return new Result<ChargeStationEntity>
-            {
-                Data = chargeStation,
-            };
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            return new Result<ChargeStationEntity>
-            {
-                Data = null,
-                Error = "The ChargeStation was modified by another user since you loaded it. Please reload the data and try again."
-            };
-        }
     }
 }

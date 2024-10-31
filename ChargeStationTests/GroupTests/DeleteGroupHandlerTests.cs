@@ -4,13 +4,15 @@ using SmartCharge.Commands.Group;
 using SmartCharge.Domain.Entities;
 using SmartCharge.Handlers.Group;
 using SmartCharge.Repository;
+using SmartCharge.UnitOfWork;
 
 namespace ChargeStationTests.GroupTests;
 
 public class DeleteGroupHandlerTests : DatabaseDependentTestBase
 {
-    private readonly GroupRepository _groupRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly Mock<IMapper> _mapper;
+    private readonly GroupRepository _groupRepository;
     private readonly IChargeStationRepository _chargeStationRepository;
     private readonly IConnectorRepository _connectorRepository;
 
@@ -18,6 +20,7 @@ public class DeleteGroupHandlerTests : DatabaseDependentTestBase
     
     public DeleteGroupHandlerTests()
     {
+        _unitOfWork = new UnitOfWork(InMemoryDb);
         _mapper = new Mock<IMapper>();
         
         _connectorRepository = new ConnectorRepository(InMemoryDb, _mapper.Object);
@@ -25,7 +28,7 @@ public class DeleteGroupHandlerTests : DatabaseDependentTestBase
         
         _groupRepository = new GroupRepository(InMemoryDb, _mapper.Object, _chargeStationRepository);
         
-        _handler = new DeleteGroupHandler(_groupRepository);
+        _handler = new DeleteGroupHandler(_unitOfWork, _groupRepository);
     }
     
     [Fact]
@@ -49,11 +52,13 @@ public class DeleteGroupHandlerTests : DatabaseDependentTestBase
     public async Task Handle_ShouldReturnSuccess_WhenGroupExists_WithChargeStation_WithConnector()
     {
         var groupEntity = GroupEntity.Create("Test Group");
-        var chargeStationEntity = ChargeStationEntity.Create("Test ChargeStation");
-        var connectorEntity = ConnectorEntity.Create("Test Connector", 1);
+        var connectorEntity1 = ConnectorEntity.Create("Test Connector 1", 1);
+        var connectorEntity2 = ConnectorEntity.Create("Test Connector 2", 1);
 
-        chargeStationEntity.AddConnector(connectorEntity);
-        groupEntity.AddChargeStation(chargeStationEntity);
+        var chargeStationEntity = ChargeStationEntity.Create("Test ChargeStation");
+        
+        chargeStationEntity.AddConnector(connectorEntity1);
+        chargeStationEntity.AddConnector(connectorEntity2);
         
         InMemoryDb.Groups.Add(groupEntity);
         await InMemoryDb.SaveChangesAsync();

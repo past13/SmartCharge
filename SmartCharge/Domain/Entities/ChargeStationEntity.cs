@@ -31,7 +31,7 @@ public class ChargeStationEntity : BaseEntity
         return chargeStation;
     }
     
-    public void Update(string name)
+    public void UpdateName(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -57,6 +57,16 @@ public class ChargeStationEntity : BaseEntity
         connector.UpdateConnectorNumber(nextConnectorNumber);
         
         _connectors.Add(connector);
+    }
+
+    public void RemoveConnector(ConnectorEntity connector)
+    {
+        if (_connectors.Count <= 1)
+        {
+            throw new ArgumentException("A charge station cannot have more than 5 connectors.");
+        }
+        
+        _connectors.Remove(connector);
     }
 
     public int GetTotalCurrentLoad()

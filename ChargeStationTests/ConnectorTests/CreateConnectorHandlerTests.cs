@@ -4,11 +4,13 @@ using SmartCharge.Commands.Connector;
 using SmartCharge.Domain.Entities;
 using SmartCharge.Handlers.Connector;
 using SmartCharge.Repository;
+using SmartCharge.UnitOfWork;
 
 namespace ChargeStationTests.ConnectorTests;
 
 public class CreateConnectorHandlerTests : DatabaseDependentTestBase
 {
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IGroupRepository _groupRepository;
     private readonly Mock<IMapper> _mapper;
     private readonly IChargeStationRepository _chargeStationRepository;
@@ -18,12 +20,13 @@ public class CreateConnectorHandlerTests : DatabaseDependentTestBase
     
     public CreateConnectorHandlerTests()
     {
+        _unitOfWork = new UnitOfWork(InMemoryDb);
         _mapper = new Mock<IMapper>();
         _connectorRepository = new ConnectorRepository(InMemoryDb, _mapper.Object);
         _chargeStationRepository = new ChargeStationRepository(InMemoryDb, _mapper.Object, _connectorRepository);
         _groupRepository = new GroupRepository(InMemoryDb, _mapper.Object, _chargeStationRepository);
         
-        _handler = new CreateConnectorHandler(_mapper.Object, _chargeStationRepository,  _groupRepository, _connectorRepository);
+        _handler = new CreateConnectorHandler(_unitOfWork, _mapper.Object, _groupRepository, _chargeStationRepository, _connectorRepository);
     }
     
     [Fact]

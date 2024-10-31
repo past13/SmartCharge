@@ -4,22 +4,27 @@ using SmartCharge.Commands.Connector;
 using SmartCharge.Domain.Entities;
 using SmartCharge.Handlers.Connector;
 using SmartCharge.Repository;
+using SmartCharge.UnitOfWork;
 
 namespace ChargeStationTests.ConnectorTests;
 
 public class DeleteConnectorHandlerTests : DatabaseDependentTestBase
 {
+    private readonly IUnitOfWork _unitOfWork;
     private readonly Mock<IMapper> _mapper;
+    private readonly IChargeStationRepository _chargeStationRepository;
     private readonly IConnectorRepository _connectorRepository;
 
     private readonly DeleteConnectorHandler _handler;
     
     public DeleteConnectorHandlerTests()
     {
+        _unitOfWork = new UnitOfWork(InMemoryDb);
         _mapper = new Mock<IMapper>();
         _connectorRepository = new ConnectorRepository(InMemoryDb, _mapper.Object);
+        _chargeStationRepository = new ChargeStationRepository(InMemoryDb, _mapper.Object, _connectorRepository);
         
-        _handler = new DeleteConnectorHandler(_connectorRepository);
+        _handler = new DeleteConnectorHandler(_unitOfWork, _chargeStationRepository, _connectorRepository);
     }
     
     [Fact]
@@ -46,7 +51,7 @@ public class DeleteConnectorHandlerTests : DatabaseDependentTestBase
     }
 
     [Fact]
-    public async Task Handle_ShouldReturnSuccess_WhenChargeChargeStationExists()
+    public async Task Handle_ShouldReturnError_WhenChargeChargeStationHaveOnlyOneConnector()
     {
         var groupEntity = GroupEntity.Create("Test Group 1");
         
@@ -61,6 +66,32 @@ public class DeleteConnectorHandlerTests : DatabaseDependentTestBase
         
         // Act
         var exist = new DeleteConnectorCommand(chargeStationEntity.Id, connectorEntity.Id);
+        var result = await _handler.Handle(exist, CancellationToken.None);
+    
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Contains("Connector can not be deleted ChargeStation required at least one connector.", result.Error);
+    }
+    
+    [Fact]
+    public async Task Handle_ShouldReturnSuccess_WhenChargeChargeStationExists()
+    {
+        var groupEntity = GroupEntity.Create("Test Group 1");
+        var connectorEntity1 = ConnectorEntity.Create("Test Connector 1", 1);
+        var connectorEntity2 = ConnectorEntity.Create("Test Connector 2", 1);
+
+        var chargeStationEntity = ChargeStationEntity.Create("Test ChargeStation");
+        
+        chargeStationEntity.AddConnector(connectorEntity1);
+        chargeStationEntity.AddConnector(connectorEntity2);
+
+        groupEntity.AddChargeStation(chargeStationEntity);
+        
+        InMemoryDb.Groups.Add(groupEntity);
+        await InMemoryDb.SaveChangesAsync();
+        
+        // Act
+        var exist = new DeleteConnectorCommand(chargeStationEntity.Id, connectorEntity1.Id);
         var result = await _handler.Handle(exist, CancellationToken.None);
     
         // Assert

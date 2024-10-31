@@ -15,9 +15,8 @@ public interface IGroupRepository
 {
     Task<bool> IsNameExist(string name);
     Task<GroupEntity> AddGroup(GroupEntity group);
-    Task<Result<GroupEntity>> UpdateGroup(GroupEntity group);
     Task<GroupEntity?> GetGroupById(Guid id);
-    Task<Result<GroupEntity>> DeleteGroupById(Guid id);
+    Task DeleteGroupById(Guid id);
     Task<IEnumerable<GroupDto>> GetAllGroups();
 }
 
@@ -63,33 +62,15 @@ public class GroupRepository : IGroupRepository
         return group;
     }
 
-    public async Task<Result<GroupEntity>> UpdateGroup(GroupEntity group)
+    public async Task<GroupEntity> GetGroupById(Guid id)
     {
-        try
-        {
-            await _context.SaveChangesAsync();
-            
-            return new Result<GroupEntity>
-            {
-                Data = group,
-            };
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            return new Result<GroupEntity>
-            {
-                Data = null,
-                Error = "The group was modified by another user since you loaded it. Please reload the data and try again."
-            };
-        }
-    }
-
-    public async Task<GroupEntity?> GetGroupById(Guid id)
-    {
-        return await _context.Groups.FindAsync(id);
+        return await _context.Groups
+            .Include(g => g.ChargeStations)
+            .ThenInclude(c => c.Connectors)
+            .FirstOrDefaultAsync();
     }
     
-    public async Task<Result<GroupEntity>> DeleteGroupById(Guid id)
+    public async Task DeleteGroupById(Guid id)
     {
         var group = await _context.Groups
             .Include(g => g.ChargeStations)
@@ -101,23 +82,5 @@ public class GroupRepository : IGroupRepository
         }
         
         _context.Groups.Remove(group);
-        
-        try
-        {
-            await _context.SaveChangesAsync();
-            
-            return new Result<GroupEntity>
-            {
-                Data = null,
-            };
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            return new Result<GroupEntity>
-            {
-                Data = null,
-                Error = "The Entity was modified by another user since you loaded it. Please reload the data and try again."
-            };
-        }
     }
 }

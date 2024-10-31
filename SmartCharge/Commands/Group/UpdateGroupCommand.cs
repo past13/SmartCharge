@@ -11,14 +11,10 @@ public class UpdateGroupCommand : IRequest<Result<GroupEntity>>
 {
     public Guid Id { get; set; }
     public string Name { get; set; }
-    public int CapacityInAmps { get; set; }
-    public List<ChargeStationRequest> ChargeStations { get; set; } 
     
-    public UpdateGroupCommand(Guid id, string name, int capacityInAmps, List<ChargeStationRequest> chargeStations)
+    public UpdateGroupCommand(Guid id, string name)
     {
         Id = id;
         Name = name;
-        CapacityInAmps = capacityInAmps;
-        ChargeStations = chargeStations;
     }
 }
