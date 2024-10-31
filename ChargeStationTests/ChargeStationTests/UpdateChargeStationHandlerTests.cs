@@ -32,7 +32,7 @@ public class UpdateChargeStationHandlerTests : DatabaseDependentTestBase
     [Fact]
     public async Task Handle_ShouldReturnError_WhenChargeStationNotExists()
     {
-        var groupEntity = GroupEntity.Create("Test Group", 1);
+        var groupEntity = GroupEntity.Create("Test Group");
         var chargeStationEntity = ChargeStationEntity.Create("Test ChargeStation 1");
         
         groupEntity.AddChargeStation(chargeStationEntity);
@@ -52,7 +52,7 @@ public class UpdateChargeStationHandlerTests : DatabaseDependentTestBase
     [Fact]
     public async Task Handle_ShouldReturnSucces_WhenChargeStationExists()
     {
-        var groupEntity = GroupEntity.Create("Test Group", 1);
+        var groupEntity = GroupEntity.Create("Test Group");
         var chargeStationEntity = ChargeStationEntity.Create("Test ChargeStation 1");
         
         groupEntity.AddChargeStation(chargeStationEntity);
@@ -74,7 +74,7 @@ public class UpdateChargeStationHandlerTests : DatabaseDependentTestBase
     [Fact]
     public async Task Handle_ShouldReturnSuccess_WhenNewConnectorNotExistsEmptyConnectors()
     {
-        var groupEntity = GroupEntity.Create("Test Group", 1);
+        var groupEntity = GroupEntity.Create("Test Group");
         var chargeStationEntity = ChargeStationEntity.Create("Test ChargeStation");
         var connectorEntity = ConnectorEntity.Create("Test Connector", 1);
 

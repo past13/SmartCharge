@@ -15,9 +15,9 @@ public interface IChargeStationRepository
 {
     Task<bool> IsNameExist(string name);
     Task<ChargeStationEntity> AddChargeStation(Guid groupId, ChargeStationEntity chargeStation);
-    Task<ApiResponse<ChargeStationEntity>> UpdateChargeStation(ChargeStationEntity chargeStation);
+    Task<Result<ChargeStationEntity>> UpdateChargeStation(ChargeStationEntity chargeStation);
     Task<ChargeStationEntity?> GetChargeStationById(Guid id);
-    Task<ApiResponse<ChargeStationEntity>> DeleteChargeStationById(Guid id);
+    Task<Result<ChargeStationEntity>> DeleteChargeStationById(Guid id);
     Task<IEnumerable<ChargeStationDto>> GetAllChargeStations();
 }
 
@@ -55,7 +55,7 @@ public class ChargeStationRepository : IChargeStationRepository
     
     public async Task<ChargeStationEntity> AddChargeStation(Guid groupId, ChargeStationEntity chargeStation)
     {
-        chargeStation.GroupId = groupId;
+        chargeStation.UpdateGroup(groupId);
         
         _context.ChargeStations.Add(chargeStation);
         await _context.SaveChangesAsync();
@@ -63,20 +63,20 @@ public class ChargeStationRepository : IChargeStationRepository
         return chargeStation;
     }
 
-    public async Task<ApiResponse<ChargeStationEntity>> UpdateChargeStation(ChargeStationEntity chargeStation)
+    public async Task<Result<ChargeStationEntity>> UpdateChargeStation(ChargeStationEntity chargeStation)
     {
         try
         {
             await _context.SaveChangesAsync();
             
-            return new ApiResponse<ChargeStationEntity>
+            return new Result<ChargeStationEntity>
             {
                 Data = null,
             };
         }
         catch (DbUpdateConcurrencyException)
         {
-            return new ApiResponse<ChargeStationEntity>
+            return new Result<ChargeStationEntity>
             {
                 Data = null,
                 Error = "The ChargeStation was modified by another user since you loaded it. Please reload the data and try again."
@@ -90,9 +90,9 @@ public class ChargeStationRepository : IChargeStationRepository
             .FirstOrDefaultAsync(cs => cs.Id == id);
     }
     
-    public async Task<ApiResponse<ChargeStationEntity>> DeleteChargeStationById(Guid id)
+    public async Task<Result<ChargeStationEntity>> DeleteChargeStationById(Guid id)
     {
-        var response = new ApiResponse<ChargeStationEntity>();
+        var response = new Result<ChargeStationEntity>();
 
         var chargeStation = await GetChargeStationById(id);
         if (chargeStation == null)
@@ -113,14 +113,14 @@ public class ChargeStationRepository : IChargeStationRepository
         {
             await _context.SaveChangesAsync();
             
-            return new ApiResponse<ChargeStationEntity>
+            return new Result<ChargeStationEntity>
             {
                 Data = chargeStation,
             };
         }
         catch (DbUpdateConcurrencyException)
         {
-            return new ApiResponse<ChargeStationEntity>
+            return new Result<ChargeStationEntity>
             {
                 Data = null,
                 Error = "The ChargeStation was modified by another user since you loaded it. Please reload the data and try again."

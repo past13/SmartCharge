@@ -15,9 +15,9 @@ public interface IGroupRepository
 {
     Task<bool> IsNameExist(string name);
     Task<GroupEntity> AddGroup(GroupEntity group);
-    Task<ApiResponse<GroupEntity>> UpdateGroup(GroupEntity group);
+    Task<Result<GroupEntity>> UpdateGroup(GroupEntity group);
     Task<GroupEntity?> GetGroupById(Guid id);
-    Task<ApiResponse<GroupEntity>> DeleteGroupById(Guid id);
+    Task<Result<GroupEntity>> DeleteGroupById(Guid id);
     Task<IEnumerable<GroupDto>> GetAllGroups();
 }
 
@@ -63,20 +63,20 @@ public class GroupRepository : IGroupRepository
         return group;
     }
 
-    public async Task<ApiResponse<GroupEntity>> UpdateGroup(GroupEntity group)
+    public async Task<Result<GroupEntity>> UpdateGroup(GroupEntity group)
     {
         try
         {
             await _context.SaveChangesAsync();
             
-            return new ApiResponse<GroupEntity>
+            return new Result<GroupEntity>
             {
                 Data = group,
             };
         }
         catch (DbUpdateConcurrencyException)
         {
-            return new ApiResponse<GroupEntity>
+            return new Result<GroupEntity>
             {
                 Data = null,
                 Error = "The group was modified by another user since you loaded it. Please reload the data and try again."
@@ -89,7 +89,7 @@ public class GroupRepository : IGroupRepository
         return await _context.Groups.FindAsync(id);
     }
     
-    public async Task<ApiResponse<GroupEntity>> DeleteGroupById(Guid id)
+    public async Task<Result<GroupEntity>> DeleteGroupById(Guid id)
     {
         var group = await _context.Groups
             .Include(g => g.ChargeStations)
@@ -106,14 +106,14 @@ public class GroupRepository : IGroupRepository
         {
             await _context.SaveChangesAsync();
             
-            return new ApiResponse<GroupEntity>
+            return new Result<GroupEntity>
             {
                 Data = null,
             };
         }
         catch (DbUpdateConcurrencyException)
         {
-            return new ApiResponse<GroupEntity>
+            return new Result<GroupEntity>
             {
                 Data = null,
                 Error = "The Entity was modified by another user since you loaded it. Please reload the data and try again."

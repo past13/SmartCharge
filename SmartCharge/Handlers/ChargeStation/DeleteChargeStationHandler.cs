@@ -8,7 +8,7 @@ using SmartCharge.Repository;
 
 namespace SmartCharge.Handlers.ChargeStation;
 
-public class DeleteChargeStationHandler : IRequestHandler<DeleteChargeStationCommand, ApiResponse<ChargeStationEntity>>
+public class DeleteChargeStationHandler : IRequestHandler<DeleteChargeStationCommand, Result<ChargeStationEntity>>
 {
     private readonly IChargeStationRepository _chargeStationRepository;
     public DeleteChargeStationHandler(IChargeStationRepository chargeStationRepository)
@@ -16,7 +16,7 @@ public class DeleteChargeStationHandler : IRequestHandler<DeleteChargeStationCom
         _chargeStationRepository = chargeStationRepository;
     }
     
-    public async Task<ApiResponse<ChargeStationEntity>> Handle(DeleteChargeStationCommand command, CancellationToken cancellationToken)
+    public async Task<Result<ChargeStationEntity>> Handle(DeleteChargeStationCommand command, CancellationToken cancellationToken)
     {
         var result = await _chargeStationRepository.DeleteChargeStationById(command.Id);
         return result;

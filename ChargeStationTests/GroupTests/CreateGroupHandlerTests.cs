@@ -5,41 +5,44 @@ using SmartCharge.Domain.Entities;
 using SmartCharge.Domain.Requests;
 using SmartCharge.Handlers.Group;
 using SmartCharge.Repository;
+using SmartCharge.UnitOfWork;
 
 namespace ChargeStationTests.GroupTests;
 
 public class CreateGroupHandlerTests : DatabaseDependentTestBase
 {
+    private readonly IUnitOfWork _unitOfWork;
     private readonly GroupRepository _groupRepository;
     private readonly Mock<IMapper> _mapper;
     private readonly IChargeStationRepository _chargeStationRepository;
     private readonly IConnectorRepository _connectorRepository;
-
     private readonly CreateGroupHandler _handler;
     
     public CreateGroupHandlerTests()
     {
         _mapper = new Mock<IMapper>();
+        _unitOfWork = new UnitOfWork(InMemoryDb);
         
         _connectorRepository = new ConnectorRepository(InMemoryDb, _mapper.Object);
         _chargeStationRepository = new ChargeStationRepository(InMemoryDb, _mapper.Object, _connectorRepository);
         
         _groupRepository = new GroupRepository(InMemoryDb, _mapper.Object, _chargeStationRepository);
         
-        _handler = new CreateGroupHandler(_groupRepository, _chargeStationRepository, _connectorRepository);
+        _handler = new CreateGroupHandler(_unitOfWork, _groupRepository, _chargeStationRepository);
     }
     
     [Fact]
     public async Task Handle_ShouldReturnError_WhenGroupNameExists()
     {
-        var command = new CreateGroupCommand("Test Group", 1, null);
-        var group = GroupEntity.Create(command.Name, command.CapacityInAmps);
+        var group = GroupEntity.Create("Test Group");
 
         InMemoryDb.Groups.Add(group);
         await InMemoryDb.SaveChangesAsync();
         
+        var chargeStationRequest = new ChargeStationRequest { Name = "Test ChargeStation" };
+        
         // Act
-        var notExist = new CreateGroupCommand("Test Group", 1, null);
+        var notExist = new CreateGroupCommand("Test Group", chargeStationRequest);
         var result = await _handler.Handle(notExist, CancellationToken.None);
 
         // Assert
@@ -50,14 +53,26 @@ public class CreateGroupHandlerTests : DatabaseDependentTestBase
     [Fact]
     public async Task Handle_ShouldReturnSuccess_WhenGroupNameNotExists()
     {
-        var command = new CreateGroupCommand("Test Group", 1, null);
-        var group = GroupEntity.Create(command.Name, command.CapacityInAmps);
+        var group = GroupEntity.Create("Test Group");
 
         InMemoryDb.Groups.Add(group);
         await InMemoryDb.SaveChangesAsync();
         
+        var chargeStationRequest = new ChargeStationRequest
+        {
+            Name = "Test ChargeStation 1",
+            Connectors =
+            [
+                new()
+                {
+                    Name = "Test Connector 1",
+                    MaxCapacityInAmps = 1
+                }
+            ]
+        };
+
         // Act
-        var notExist = new CreateGroupCommand("Test Group 1", 1, null);
+        var notExist = new CreateGroupCommand("Test Group 1", chargeStationRequest);
         var result = await _handler.Handle(notExist, CancellationToken.None);
 
         // Assert
@@ -67,20 +82,32 @@ public class CreateGroupHandlerTests : DatabaseDependentTestBase
     [Fact]
     public async Task Handle_ShouldReturnSuccess_WhenNewChargeStationNotExists()
     {
-        var chargeStation1 = new ChargeStationRequest { Name = "Test ChargeStation 1" };
+        var group = GroupEntity.Create("Test Group");
+        var chargeStationEntity = ChargeStationEntity.Create("Test ChargeStation 1");
+
+        var connector = ConnectorEntity.Create("Test Connector 1", 1);
         
-        var group = GroupEntity.Create("Test Group", 1);
-        var chargeStationEntity = ChargeStationEntity.Create(chargeStation1.Name);
-        
+        chargeStationEntity.AddConnector(connector);
         group.AddChargeStation(chargeStationEntity);
         
         InMemoryDb.Groups.Add(group);
         await InMemoryDb.SaveChangesAsync();
-        
-        var chargeStation2 = new ChargeStationRequest { Name = "Test ChargeStation 2" };
+
+        var chargeStationRequest = new ChargeStationRequest
+        {
+            Name = "Test ChargeStation 2",
+            Connectors =
+            [
+                new()
+                {
+                    Name = "Test Connector 1",
+                    MaxCapacityInAmps = 1
+                }
+            ]
+        };
         
         // Act
-        var notExist = new CreateGroupCommand("Test Group 1", 1, chargeStation2);
+        var notExist = new CreateGroupCommand("Test Group 1", chargeStationRequest);
         var result = await _handler.Handle(notExist, CancellationToken.None);
 
         // Assert
@@ -92,22 +119,143 @@ public class CreateGroupHandlerTests : DatabaseDependentTestBase
     [Fact]
     public async Task Handle_ShouldReturnError_WhenChargeStationAlreadyExists()
     {
-        var chargeStation = new ChargeStationRequest { Name = "Test ChargeStation" };
+        var existName = "Test ChargeStation";
         
-        var group = GroupEntity.Create("Test Group", 1);
-        var chargeStationEntity = ChargeStationEntity.Create(chargeStation.Name);
+        var group = GroupEntity.Create("Test Group");
+        var chargeStationEntity = ChargeStationEntity.Create(existName);
         
         group.AddChargeStation(chargeStationEntity);
         
         InMemoryDb.Groups.Add(group);
         await InMemoryDb.SaveChangesAsync();
         
+        var chargeStation = new ChargeStationRequest { Name = existName };
+
         // Act
-        var notExist = new CreateGroupCommand("Test Group 1", 1, chargeStation);
+        var notExist = new CreateGroupCommand("Test Group 1", chargeStation);
         var result = await _handler.Handle(notExist, CancellationToken.None);
 
         // Assert
         Assert.False(result.IsSuccess);
-        Assert.Contains(result.Error, "A ChargeStation with the name 'Test ChargeStation' already exists.");
+        Assert.Contains(result.Error, $"A ChargeStation with the name {chargeStation.Name} already exists.");
+    }
+
+    [Fact]
+    public async Task Handle_ShouldReturnError_WhenChargeStationHasMoreThenFive()
+    {
+        var connectors = new List<ConnectorRequest>
+        {
+            new()
+            {
+                Name = "Test Connector 1",
+                MaxCapacityInAmps = 10
+            },
+            new()
+            {
+                Name = "Test Connector 1",
+                MaxCapacityInAmps = 20
+            },
+            new()
+            {
+                Name = "Test Connector 3",
+                MaxCapacityInAmps = 30
+            },
+            new()
+            {
+                Name = "Test Connector 4",
+                MaxCapacityInAmps = 40
+            },
+            new()
+            {
+                Name = "Test Connector 5",
+                MaxCapacityInAmps = 50
+            },
+            new()
+            {
+                Name = "Test Connector 6",
+                MaxCapacityInAmps = 60
+            }
+        };
+        
+        var chargeStation = new ChargeStationRequest
+        {
+            Name = "Test ChargeStation",
+            Connectors = connectors
+        };
+        
+        // Act
+        var notExist = new CreateGroupCommand("Test Group 1", chargeStation);
+        var result = await _handler.Handle(notExist, CancellationToken.None);
+        
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Contains(result.Error, "A charge station cannot have more than 5 connectors.");
+    }
+    
+    [Fact]
+    public async Task Handle_ShouldReturnSuccess_WhenChargeStationHasFive()
+    {
+        var connectors = new List<ConnectorRequest>
+        {
+            new()
+            {
+                Name = "Test Connector 1",
+                MaxCapacityInAmps = 10
+            },
+            new()
+            {
+                Name = "Test Connector 1",
+                MaxCapacityInAmps = 20
+            },
+            new()
+            {
+                Name = "Test Connector 3",
+                MaxCapacityInAmps = 30
+            },
+            new()
+            {
+                Name = "Test Connector 4",
+                MaxCapacityInAmps = 40
+            },
+            new()
+            {
+                Name = "Test Connector 5",
+                MaxCapacityInAmps = 50
+            }
+        };
+        
+        var chargeStation = new ChargeStationRequest
+        {
+            Name = "Test ChargeStation",
+            Connectors = connectors
+        };
+        
+        // Act
+        var notExist = new CreateGroupCommand("Test Group 1", chargeStation);
+        var result = await _handler.Handle(notExist, CancellationToken.None);
+        
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Equal(result.Data.CapacityInAmps, connectors.Sum(c => c.MaxCapacityInAmps));
+    }
+    
+    [Fact]
+    public async Task Handle_ShouldReturnError_WhenChargeStationWithoutConnectors()
+    {
+        var connectors = new List<ConnectorRequest>();
+        
+        var chargeStation = new ChargeStationRequest
+        {
+            Name = "Test ChargeStation",
+            Connectors = connectors
+        };
+        
+        // Act
+        var notExist = new CreateGroupCommand("Test Group 1", chargeStation);
+        var result = await _handler.Handle(notExist, CancellationToken.None);
+        
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Contains(result.Error, $"A ChargeStation name {chargeStation.Name} do not have connector.");
     }
 }

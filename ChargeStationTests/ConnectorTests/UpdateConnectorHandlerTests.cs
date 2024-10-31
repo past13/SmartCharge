@@ -29,7 +29,7 @@ public class UpdateConnectorHandlerTests : DatabaseDependentTestBase
     [Fact]
     public async Task Handle_ShouldReturnError_WhenConnectorNotExists()
     {
-        var groupEntity = GroupEntity.Create("Test Group", 1);
+        var groupEntity = GroupEntity.Create("Test Group");
         var chargeStationEntity = ChargeStationEntity.Create("Test ChargeStation 1");
         var connectorEntity = ConnectorEntity.Create("Test Connector 1", 1);
 
@@ -40,7 +40,7 @@ public class UpdateConnectorHandlerTests : DatabaseDependentTestBase
         await InMemoryDb.SaveChangesAsync();
         
         // Act
-        var notExist = new UpdateConnectorCommand(Guid.NewGuid(), groupEntity.Id,"Test Connector 2");
+        var notExist = new UpdateConnectorCommand(Guid.NewGuid(), groupEntity.Id,"Test Connector 2", 1);
         var result = await _handler.Handle(notExist, CancellationToken.None);
 
         // Assert
@@ -51,7 +51,7 @@ public class UpdateConnectorHandlerTests : DatabaseDependentTestBase
     [Fact]
     public async Task Handle_ShouldReturnSuccess_WhenConnectorExists()
     {
-        var groupEntity = GroupEntity.Create("Test Group", 1);
+        var groupEntity = GroupEntity.Create("Test Group");
         var chargeStationEntity = ChargeStationEntity.Create("Test ChargeStation 1");
         var connectorEntity = ConnectorEntity.Create("Test Connector 1", 1);
 
@@ -62,7 +62,7 @@ public class UpdateConnectorHandlerTests : DatabaseDependentTestBase
         await InMemoryDb.SaveChangesAsync();
         
         // Act
-        var exist = new UpdateConnectorCommand(connectorEntity.Id, chargeStationEntity.Id,"Updated Test Group");
+        var exist = new UpdateConnectorCommand(connectorEntity.Id, chargeStationEntity.Id,"Updated Test Group", 1);
         var result = await _handler.Handle(exist, CancellationToken.None);
     
         // Assert

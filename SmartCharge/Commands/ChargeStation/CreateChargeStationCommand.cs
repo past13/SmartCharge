@@ -7,7 +7,7 @@ using SmartCharge.Domain.Response;
 
 namespace SmartCharge.Commands.ChargeStation;
 
-public class CreateChargeStationCommand: IRequest<ApiResponse<ChargeStationEntity>>
+public class CreateChargeStationCommand: IRequest<Result<ChargeStationEntity>>
 {
     public Guid GroupId { get; set; }
     public string Name { get; set; }

@@ -10,7 +10,7 @@ using SmartCharge.Repository;
 
 namespace SmartCharge.Handlers.Connector;
 
-public class CreateConnectorHandler : IRequestHandler<CreateConnectorCommand, ApiResponse<ConnectorDto>>
+public class CreateConnectorHandler : IRequestHandler<CreateConnectorCommand, Result<ConnectorDto>>
 {
     private readonly IMapper _mapper;
     private readonly IGroupRepository _groupRepository;
@@ -29,9 +29,9 @@ public class CreateConnectorHandler : IRequestHandler<CreateConnectorCommand, Ap
         _connectorRepository = connectorRepository;
     }
     
-    public async Task<ApiResponse<ConnectorDto>> Handle(CreateConnectorCommand command, CancellationToken cancellationToken)
+    public async Task<Result<ConnectorDto>> Handle(CreateConnectorCommand command, CancellationToken cancellationToken)
     {
-        var response = new ApiResponse<ConnectorDto>();
+        var response = new Result<ConnectorDto>();
 
         var chargeStation = await _chargeStationRepository.GetChargeStationById(command.ChargeStationId);
         if (chargeStation == null)

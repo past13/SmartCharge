@@ -8,7 +8,7 @@ using SmartCharge.Repository;
 
 namespace SmartCharge.Handlers.Group;
 
-public class DeleteGroupHandler : IRequestHandler<DeleteGroupCommand, ApiResponse<GroupEntity>>
+public class DeleteGroupHandler : IRequestHandler<DeleteGroupCommand, Result<GroupEntity>>
 {
     private readonly IGroupRepository _groupRepository;
     public DeleteGroupHandler(IGroupRepository groupRepository)
@@ -16,9 +16,9 @@ public class DeleteGroupHandler : IRequestHandler<DeleteGroupCommand, ApiRespons
         _groupRepository = groupRepository;
     }
     
-    public async Task<ApiResponse<GroupEntity>> Handle(DeleteGroupCommand command, CancellationToken cancellationToken)
+    public async Task<Result<GroupEntity>> Handle(DeleteGroupCommand command, CancellationToken cancellationToken)
     {
-        var response = new ApiResponse<GroupEntity>();
+        var response = new Result<GroupEntity>();
 
         var groupExist = await _groupRepository.GetGroupById(command.Id);
         if (groupExist == null)

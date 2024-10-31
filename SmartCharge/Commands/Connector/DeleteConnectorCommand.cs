@@ -5,7 +5,7 @@ using SmartCharge.Domain.Response;
 
 namespace SmartCharge.Commands.Connector;
 
-public class DeleteConnectorCommand : IRequest<ApiResponse<ConnectorEntity>>
+public class DeleteConnectorCommand : IRequest<Result<ConnectorEntity>>
 {
     public Guid Id { get; set; }
     public Guid ChargeStationId { get; set; }

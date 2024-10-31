@@ -8,7 +8,7 @@ using SmartCharge.Repository;
 
 namespace SmartCharge.Handlers.ChargeStation;
 
-public class CreateChargeStationHandler : IRequestHandler<CreateChargeStationCommand, ApiResponse<ChargeStationEntity>>
+public class CreateChargeStationHandler : IRequestHandler<CreateChargeStationCommand, Result<ChargeStationEntity>>
 {
     private readonly IGroupRepository _groupRepository;
     private readonly IChargeStationRepository _chargeStationRepository;
@@ -21,9 +21,9 @@ public class CreateChargeStationHandler : IRequestHandler<CreateChargeStationCom
         _groupRepository = groupRepository;
     }
     
-    public async Task<ApiResponse<ChargeStationEntity>> Handle(CreateChargeStationCommand command, CancellationToken cancellationToken)
+    public async Task<Result<ChargeStationEntity>> Handle(CreateChargeStationCommand command, CancellationToken cancellationToken)
     {
-        var response = new ApiResponse<ChargeStationEntity>();
+        var response = new Result<ChargeStationEntity>();
 
         var group = await _groupRepository.GetGroupById(command.GroupId);
         if (group == null)
@@ -44,7 +44,7 @@ public class CreateChargeStationHandler : IRequestHandler<CreateChargeStationCom
 
         foreach (var connectorRequest in command.Connectors)
         {
-            var connector = ConnectorEntity.Create(connectorRequest.Name, connectorRequest.CapacityInAmps);
+            var connector = ConnectorEntity.Create(connectorRequest.Name, connectorRequest.MaxCapacityInAmps);
             chargeStation.AddConnector(connector);
         }
         

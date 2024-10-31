@@ -7,7 +7,7 @@ using SmartCharge.Domain.Response;
 
 namespace SmartCharge.Commands.Group;
 
-public class UpdateGroupCommand : IRequest<ApiResponse<GroupEntity>>
+public class UpdateGroupCommand : IRequest<Result<GroupEntity>>
 {
     public Guid Id { get; set; }
     public string Name { get; set; }

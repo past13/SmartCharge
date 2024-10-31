@@ -32,7 +32,7 @@ public class UpdateGroupHandlerTests : DatabaseDependentTestBase
     public async Task Handle_ShouldReturnError_WhenGroupNotExists()
     {
         var command = new UpdateGroupCommand(Guid.NewGuid(), "Test Group 1", 1, []);
-        var group = GroupEntity.Create(command.Name, command.CapacityInAmps);
+        var group = GroupEntity.Create(command.Name);
 
         InMemoryDb.Groups.Add(group);
         await InMemoryDb.SaveChangesAsync();
@@ -49,7 +49,7 @@ public class UpdateGroupHandlerTests : DatabaseDependentTestBase
     [Fact]
     public async Task Handle_ShouldReturnSuccess_WhenGroupExists()
     {
-        var group = GroupEntity.Create("Test Group 1", 1);
+        var group = GroupEntity.Create("Test Group 1");
 
         InMemoryDb.Groups.Add(group);
         await InMemoryDb.SaveChangesAsync();
@@ -57,14 +57,26 @@ public class UpdateGroupHandlerTests : DatabaseDependentTestBase
         var expectedName = "Test Group 2";
         var capacityInAmps = 2;
 
+        var chargeStationRequest = new ChargeStationRequest
+        {
+            Name = "Test ChargeStation 2",
+            Connectors =
+            [
+                new ConnectorRequest
+                {
+                    Name = "Test Connector 1",
+                    MaxCapacityInAmps = 1
+                }
+            ]
+        };
+        
         // Act
-        var notExist = new UpdateGroupCommand(group.Id, expectedName, capacityInAmps, []);
+        var notExist = new UpdateGroupCommand(group.Id, expectedName, capacityInAmps, [chargeStationRequest]);
         var result = await _handler.Handle(notExist, CancellationToken.None);
 
         // Assert
         Assert.True(result.IsSuccess);
         Assert.Equal(expectedName, InMemoryDb.Groups.First().Name);
-        Assert.Equal(capacityInAmps, InMemoryDb.Groups.First().CapacityInAmps);
     }
 
     [Fact]
@@ -75,7 +87,7 @@ public class UpdateGroupHandlerTests : DatabaseDependentTestBase
             Name = "Test ChargeStation 1",
         };
         
-        var group = GroupEntity.Create("Test Group", 1);
+        var group = GroupEntity.Create("Test Group");
     
         var chargeStationEntity = ChargeStationEntity.Create(chargeStation1.Name);
         group.AddChargeStation(chargeStationEntity);

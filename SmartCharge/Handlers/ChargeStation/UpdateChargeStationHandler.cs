@@ -8,7 +8,7 @@ using SmartCharge.Repository;
 
 namespace SmartCharge.Handlers.ChargeStation;
 
-public class UpdateChargeStationHandler : IRequestHandler<UpdateChargeStationCommand, ApiResponse<ChargeStationEntity>>
+public class UpdateChargeStationHandler : IRequestHandler<UpdateChargeStationCommand, Result<ChargeStationEntity>>
 {
     private readonly IGroupRepository _groupRepository;
     private readonly IChargeStationRepository _chargeStationRepository;
@@ -22,9 +22,9 @@ public class UpdateChargeStationHandler : IRequestHandler<UpdateChargeStationCom
         _chargeStationRepository = chargeStationRepository;
     }
     
-    public async Task<ApiResponse<ChargeStationEntity>> Handle(UpdateChargeStationCommand command, CancellationToken cancellationToken)
+    public async Task<Result<ChargeStationEntity>> Handle(UpdateChargeStationCommand command, CancellationToken cancellationToken)
     {
-        var response = new ApiResponse<ChargeStationEntity>();
+        var response = new Result<ChargeStationEntity>();
 
         var chargeStationName = command.Name.Trim();
         var chargeStationExist = await _chargeStationRepository.IsNameExist(chargeStationName);

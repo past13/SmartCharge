@@ -8,7 +8,7 @@ using SmartCharge.Repository;
 
 namespace SmartCharge.Handlers.Group;
 
-public class UpdateGroupHandler : IRequestHandler<UpdateGroupCommand, ApiResponse<GroupEntity>>
+public class UpdateGroupHandler : IRequestHandler<UpdateGroupCommand, Result<GroupEntity>>
 {
     private readonly IGroupRepository _groupRepository;
     public UpdateGroupHandler(IGroupRepository groupRepository)
@@ -16,9 +16,9 @@ public class UpdateGroupHandler : IRequestHandler<UpdateGroupCommand, ApiRespons
         _groupRepository = groupRepository;
     }
     
-    public async Task<ApiResponse<GroupEntity>> Handle(UpdateGroupCommand command, CancellationToken cancellationToken)
+    public async Task<Result<GroupEntity>> Handle(UpdateGroupCommand command, CancellationToken cancellationToken)
     {
-        var response = new ApiResponse<GroupEntity>();
+        var response = new Result<GroupEntity>();
 
         var groupName = command.Name.Trim();
         var groupNameExist = await _groupRepository.IsNameExist(groupName);
@@ -35,7 +35,7 @@ public class UpdateGroupHandler : IRequestHandler<UpdateGroupCommand, ApiRespons
             return response; 
         }
 
-        group.Update(groupName, command.CapacityInAmps);
+        group.Update(groupName);
 
         // foreach (var chargeStationRequest in command.ChargeStations)
         // {

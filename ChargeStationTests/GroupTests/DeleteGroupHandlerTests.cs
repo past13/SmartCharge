@@ -31,7 +31,7 @@ public class DeleteGroupHandlerTests : DatabaseDependentTestBase
     [Fact]
     public async Task Handle_ShouldReturnError_WhenGroupNotExists()
     {
-        var groupEntity = GroupEntity.Create("Test Group", 1);
+        var groupEntity = GroupEntity.Create("Test Group");
 
         InMemoryDb.Groups.Add(groupEntity);
         await InMemoryDb.SaveChangesAsync();
@@ -48,7 +48,7 @@ public class DeleteGroupHandlerTests : DatabaseDependentTestBase
     [Fact]
     public async Task Handle_ShouldReturnSuccess_WhenGroupExists_WithChargeStation_WithConnector()
     {
-        var groupEntity = GroupEntity.Create("Test Group", 1);
+        var groupEntity = GroupEntity.Create("Test Group");
         var chargeStationEntity = ChargeStationEntity.Create("Test ChargeStation");
         var connectorEntity = ConnectorEntity.Create("Test Connector", 1);
 
@@ -69,7 +69,7 @@ public class DeleteGroupHandlerTests : DatabaseDependentTestBase
     [Fact]
     public async Task Handle_ShouldReturnSuccess_WhenGroupExists_WithMultiple_ChargeStation_Connector()
     {
-        var groupEntity1 = GroupEntity.Create("Test Group 1", 1);
+        var groupEntity1 = GroupEntity.Create("Test Group 1");
         for (var i = 0; i < 5; i++)
         {
             var connectorEntity = ConnectorEntity.Create("Test Connector" + i, 1);
@@ -79,7 +79,7 @@ public class DeleteGroupHandlerTests : DatabaseDependentTestBase
             groupEntity1.AddChargeStation(chargeStationEntity);
         }
         
-        var groupEntity2 = GroupEntity.Create("Test Group 2", 1);
+        var groupEntity2 = GroupEntity.Create("Test Group 2");
         for (var i = 0; i < 5; i++)
         {
             var connectorEntity = ConnectorEntity.Create("Test Connector" + i, 1);

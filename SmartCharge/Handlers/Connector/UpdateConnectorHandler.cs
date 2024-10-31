@@ -8,7 +8,7 @@ using SmartCharge.Repository;
 
 namespace SmartCharge.Handlers.Connector;
 
-public class UpdateConnectorHandler : IRequestHandler<UpdateConnectorCommand, ApiResponse<ConnectorEntity>>
+public class UpdateConnectorHandler : IRequestHandler<UpdateConnectorCommand, Result<ConnectorEntity>>
 {
     private readonly IChargeStationRepository _chargeStationRepository;
     private readonly IConnectorRepository _connectorRepository;
@@ -18,9 +18,9 @@ public class UpdateConnectorHandler : IRequestHandler<UpdateConnectorCommand, Ap
         _connectorRepository = connectorRepository;
     }
     
-    public async Task<ApiResponse<ConnectorEntity>> Handle(UpdateConnectorCommand command, CancellationToken cancellationToken)
+    public async Task<Result<ConnectorEntity>> Handle(UpdateConnectorCommand command, CancellationToken cancellationToken)
     {
-        var response = new ApiResponse<ConnectorEntity>();
+        var response = new Result<ConnectorEntity>();
 
         var connectorName = command.Name.Trim();
         var connectorNameExist = await _connectorRepository.IsNameExist(connectorName);
@@ -37,7 +37,7 @@ public class UpdateConnectorHandler : IRequestHandler<UpdateConnectorCommand, Ap
             return response; 
         }
         
-        connector.Update(connectorName);
+        connector.Update(connectorName, command.MaxCurrentInAmps);
 
         //Todo: update many
         var result = await _connectorRepository.UpdateConnector(connector);

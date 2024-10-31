@@ -49,7 +49,7 @@ public class CreateChargeStationHandlerTests : DatabaseDependentTestBase
     [Fact]
     public async Task Handle_ShouldReturnSuccess_WhenGroupExists()
     {
-        var groupEntity = GroupEntity.Create("Test Group", 1);
+        var groupEntity = GroupEntity.Create("Test Group");
         var chargeStationEntity = ChargeStationEntity.Create("Test ChargeStation 1");
         
         groupEntity.AddChargeStation(chargeStationEntity);
@@ -70,11 +70,8 @@ public class CreateChargeStationHandlerTests : DatabaseDependentTestBase
     {
         var expectedName = "Test ChargeStation";
         
-        var chargeStationRequest = new ChargeStationRequest { Name = "Test ChargeStation" };
-        
-        var groupCommand = new CreateGroupCommand("Test Group", 1, chargeStationRequest);
-        var groupEntity = GroupEntity.Create(groupCommand.Name, groupCommand.CapacityInAmps);
-        var chargeStationEntity = ChargeStationEntity.Create(chargeStationRequest.Name);
+        var groupEntity = GroupEntity.Create("Test Group");
+        var chargeStationEntity = ChargeStationEntity.Create("Test ChargeStation");
         
         groupEntity.AddChargeStation(chargeStationEntity);
         

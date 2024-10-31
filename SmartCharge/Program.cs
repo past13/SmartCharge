@@ -10,6 +10,7 @@ using SmartCharge.Handlers.ChargeStation;
 using SmartCharge.Handlers.Connector;
 using SmartCharge.Handlers.Group;
 using SmartCharge.Repository;
+using SmartCharge.UnitOfWork;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,17 +18,17 @@ builder.Services.AddControllers();
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+// builder.Services.AddMediatR(config =>
+// {
+//     config.RegisterServicesFromAssemblyContaining<ApplicationAssemblyReference>(); // Registers from this assembly
+// });
+
+// Alternatively, if handlers are in multiple assemblies, register each assembly once:
 builder.Services.AddMediatR(typeof(CreateGroupHandler).Assembly); 
-builder.Services.AddMediatR(typeof(UpdateGroupHandler).Assembly); 
-builder.Services.AddMediatR(typeof(DeleteGroupHandler).Assembly); 
-
 builder.Services.AddMediatR(typeof(CreateChargeStationHandler).Assembly); 
-builder.Services.AddMediatR(typeof(UpdateChargeStationHandler).Assembly); 
-builder.Services.AddMediatR(typeof(DeleteChargeStationHandler).Assembly); 
-
-builder.Services.AddMediatR(typeof(CreateConnectorHandler).Assembly); 
-builder.Services.AddMediatR(typeof(UpdateConnectorHandler).Assembly); 
-builder.Services.AddMediatR(typeof(DeleteConnectorHandler).Assembly); 
+builder.Services.AddMediatR(typeof(CreateConnectorHandler).Assembly);
 
 builder.Services.AddTransient<IGroupRepository, GroupRepository>();
 builder.Services.AddTransient<IChargeStationRepository, ChargeStationRepository>();

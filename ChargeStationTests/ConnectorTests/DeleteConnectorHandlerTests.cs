@@ -25,7 +25,7 @@ public class DeleteConnectorHandlerTests : DatabaseDependentTestBase
     [Fact]
     public async Task Handle_ShouldReturnError_WhenChargeChargeStationNotExists()
     {
-        var groupEntity = GroupEntity.Create("Test Group 1", 1);
+        var groupEntity = GroupEntity.Create("Test Group 1");
         
         var connectorEntity = ConnectorEntity.Create("Test Connector", 1);
         var chargeStationEntity = ChargeStationEntity.Create("Test ChargeStation");
@@ -48,7 +48,7 @@ public class DeleteConnectorHandlerTests : DatabaseDependentTestBase
     [Fact]
     public async Task Handle_ShouldReturnSuccess_WhenChargeChargeStationExists()
     {
-        var groupEntity = GroupEntity.Create("Test Group 1", 1);
+        var groupEntity = GroupEntity.Create("Test Group 1");
         
         var connectorEntity = ConnectorEntity.Create("Test Connector", 1);
         var chargeStationEntity = ChargeStationEntity.Create("Test ChargeStation");

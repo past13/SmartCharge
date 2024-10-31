@@ -8,7 +8,7 @@ using SmartCharge.Repository;
 
 namespace SmartCharge.Handlers.Connector;
 
-public class DeleteConnectorHandler : IRequestHandler<DeleteConnectorCommand, ApiResponse<ConnectorEntity>>
+public class DeleteConnectorHandler : IRequestHandler<DeleteConnectorCommand, Result<ConnectorEntity>>
 {
     private readonly IConnectorRepository _connectorRepository;
     public DeleteConnectorHandler(IConnectorRepository connectorRepository)
@@ -16,9 +16,9 @@ public class DeleteConnectorHandler : IRequestHandler<DeleteConnectorCommand, Ap
         _connectorRepository = connectorRepository;
     }
     
-    public async Task<ApiResponse<ConnectorEntity>> Handle(DeleteConnectorCommand request, CancellationToken cancellationToken)
+    public async Task<Result<ConnectorEntity>> Handle(DeleteConnectorCommand request, CancellationToken cancellationToken)
     {
-        var response = new ApiResponse<ConnectorEntity>();
+        var response = new Result<ConnectorEntity>();
         
         var connector = await _connectorRepository.GetConnectorById(request.Id);
         if (connector == null)
