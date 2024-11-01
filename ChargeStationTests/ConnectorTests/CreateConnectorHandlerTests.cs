@@ -81,4 +81,25 @@ public class CreateConnectorHandlerTests : DatabaseDependentTestBase
         Assert.True(result.IsSuccess);
         Assert.Equal(2, connectors.Count);
     }
+    
+    [Fact]
+    public async Task Handle_ShouldReturnSuccess_WhenConnectorRemoveInMiddleAndAddNewOneItReplaceItPlace()
+    {
+        var chargeStationEntity = ChargeStationEntity.Create("Test ChargeStation");
+
+        var connectorEntity1 = ConnectorEntity.Create("Test Connector 1", 1);
+        var connectorEntity2 = ConnectorEntity.Create("Test Connector 2", 1);
+        var connectorEntity3 = ConnectorEntity.Create("Test Connector 3", 1);
+
+        chargeStationEntity.AddConnector(connectorEntity1);
+        chargeStationEntity.AddConnector(connectorEntity2);
+        chargeStationEntity.AddConnector(connectorEntity3);
+
+        chargeStationEntity.RemoveConnector(connectorEntity1);
+        
+        var connectorEntity4 = ConnectorEntity.Create("Test Connector 4", 1);
+        
+        chargeStationEntity.AddConnector(connectorEntity4);
+        Assert.Equal(1, connectorEntity4.ConnectorNumber);
+    }
 }

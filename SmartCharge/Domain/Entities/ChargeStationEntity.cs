@@ -76,7 +76,9 @@ public class ChargeStationEntity : BaseEntity
 
     public void RemoveConnector(ConnectorEntity connector)
     {
-        if (_connectors.Count <= 1)
+        connector.UpdateConnectorNumber(0);
+        
+        if (Connectors.Count <= 1)
         {
             throw new ArgumentException($"A ChargeStation Id {connector.ChargeStationId} cannot have less than 1 connector.");
         }
@@ -115,10 +117,5 @@ public class ChargeStationEntity : BaseEntity
     public int GetTotalCurrentLoad()
     {
         return _connectors.Sum(c => c.MaxCurrentInAmps);
-    }
-
-    public void UpdateGroup(Guid groupId)
-    {
-        GroupId = groupId;
     }
 }

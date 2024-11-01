@@ -27,7 +27,7 @@ public class UpdateGroupHandlerTests : DatabaseDependentTestBase
         _chargeStationRepository = new ChargeStationRepository(InMemoryDb, _mapper.Object, _connectorRepository);
         _groupRepository = new GroupRepository(InMemoryDb, _mapper.Object, _chargeStationRepository);
         
-        _handler = new UpdateGroupHandler(_unitOfWork, _groupRepository);
+        _handler = new UpdateGroupHandler(_unitOfWork, _mapper.Object, _groupRepository);
     }
     
     [Fact]

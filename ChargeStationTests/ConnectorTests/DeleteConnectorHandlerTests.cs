@@ -80,10 +80,11 @@ public class DeleteConnectorHandlerTests : DatabaseDependentTestBase
     public async Task Handle_ShouldReturnSuccess_WhenChargeChargeStationExists()
     {
         var groupEntity = GroupEntity.Create("Test Group 1");
+        
+        var chargeStationEntity = ChargeStationEntity.Create("Test ChargeStation");
+
         var connectorEntity1 = ConnectorEntity.Create("Test Connector 1", 1);
         var connectorEntity2 = ConnectorEntity.Create("Test Connector 2", 1);
-
-        var chargeStationEntity = ChargeStationEntity.Create("Test ChargeStation");
         
         chargeStationEntity.AddConnector(connectorEntity1);
         chargeStationEntity.AddConnector(connectorEntity2);
@@ -99,5 +100,21 @@ public class DeleteConnectorHandlerTests : DatabaseDependentTestBase
     
         // Assert
         Assert.True(result.IsSuccess);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldReturnSuccess_WhenConnectorRemovedShouldReorderNumber()
+    {
+        var chargeStationEntity = ChargeStationEntity.Create("Test ChargeStation");
+
+        var connectorEntity1 = ConnectorEntity.Create("Test Connector 1", 1);
+        var connectorEntity2 = ConnectorEntity.Create("Test Connector 2", 1);
+        
+        chargeStationEntity.AddConnector(connectorEntity1);
+        chargeStationEntity.AddConnector(connectorEntity2);
+        
+        chargeStationEntity.RemoveConnector(connectorEntity1);
+
+        Assert.Equal(2, connectorEntity2.ConnectorNumber);
     }
 }

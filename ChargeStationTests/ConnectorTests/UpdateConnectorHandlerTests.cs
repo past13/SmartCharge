@@ -27,7 +27,7 @@ public class UpdateConnectorHandlerTests : DatabaseDependentTestBase
         _chargeStationRepository = new ChargeStationRepository(InMemoryDb, _mapper.Object, _connectorRepository);
         _groupRepository = new GroupRepository(InMemoryDb, _mapper.Object, _chargeStationRepository);
         
-        _handler = new UpdateConnectorHandler(_unitOfWork, _groupRepository, _chargeStationRepository, _connectorRepository);
+        _handler = new UpdateConnectorHandler(_unitOfWork, _mapper.Object, _groupRepository, _chargeStationRepository, _connectorRepository);
     }
     
     [Fact]
@@ -165,5 +165,28 @@ public class UpdateConnectorHandlerTests : DatabaseDependentTestBase
         // Assert
         Assert.False(result.IsSuccess);
         Assert.Contains($"A Connector with Id {connectorEntity.Id} already deleting.", result.Error);
+    }
+    
+    [Fact]
+    public async Task Handle_ShouldReturnSuccess_WhenConnectorUpdateNewChargeStationGetNewNumber()
+    {
+        var chargeStationEntity1 = ChargeStationEntity.Create("Test ChargeStation");
+
+        var connectorEntity1 = ConnectorEntity.Create("Test Connector 1", 1);
+        var connectorEntity2 = ConnectorEntity.Create("Test Connector 2", 1);
+        var connectorEntity3 = ConnectorEntity.Create("Test Connector 3", 1);
+
+        chargeStationEntity1.AddConnector(connectorEntity1);
+        chargeStationEntity1.AddConnector(connectorEntity2);
+        chargeStationEntity1.AddConnector(connectorEntity3);
+
+        var chargeStationEntity2 = ChargeStationEntity.Create("Test ChargeStation");
+        var connectorEntity4 = ConnectorEntity.Create("Test Connector 4", 1);
+        chargeStationEntity2.AddConnector(connectorEntity4);
+        
+        chargeStationEntity1.RemoveConnector(connectorEntity3);
+        chargeStationEntity2.AddConnector(connectorEntity3);
+
+        Assert.Equal(2, connectorEntity3.ConnectorNumber);
     }
 }
