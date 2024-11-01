@@ -60,7 +60,7 @@ public class GroupController : Controller
     {
         var command = new DeleteGroupCommand(id);
 
-        await _sender.Send(command);
-        return NoContent();
+        var result = await _sender.Send(command);
+        return Ok(result);
     }
 }

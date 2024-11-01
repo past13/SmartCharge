@@ -42,7 +42,7 @@ public class CreateGroupHandler : IRequestHandler<CreateGroupCommand, Result<Gro
             var groupNameExist = await _groupRepository.IsNameExist(groupName);
             if (groupNameExist)
             {
-                throw new ArgumentException($"A Group with the name '{groupName}' already exists.");
+                throw new ArgumentException($"A Group with the name {groupName} already exists.");
             }
 
             var group = GroupEntity.Create(groupName);

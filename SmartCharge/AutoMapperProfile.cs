@@ -9,15 +9,9 @@ public class AutoMapperProfile : Profile
 {
     public AutoMapperProfile()
     {
-        CreateMap<GroupEntity, GroupDto>()
-            .ForMember(dest => 
-                dest.ChargeStations, opt => 
-                opt.MapFrom(src => src.ChargeStations));
+        CreateMap<GroupEntity, GroupDto>();
         
-        CreateMap<ChargeStationEntity, ChargeStationDto>()
-            .ForMember(dest => dest.Connectors, 
-                opt => 
-                    opt.MapFrom(src => src.Connectors));
+        CreateMap<ChargeStationEntity, ChargeStationDto>();
 
         CreateMap<ConnectorEntity, ConnectorDto>();
     }

@@ -8,9 +8,9 @@ namespace SmartCharge.Commands.Group;
 public class CreateGroupCommand : IRequest<Result<GroupDto>>
 {
     public string Name { get; set; }
-    public GetChargeStationRequest ChargeStation { get; set; } 
+    public ChargeStationRequest ChargeStation { get; set; } 
     
-    public CreateGroupCommand(string name, GetChargeStationRequest chargeStation)
+    public CreateGroupCommand(string name, ChargeStationRequest chargeStation)
     {
         Name = name;
         ChargeStation = chargeStation;

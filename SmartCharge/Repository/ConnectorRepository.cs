@@ -74,12 +74,7 @@ public class ConnectorRepository : IConnectorRepository
             .Include(cs => cs.Connectors)
             .SelectMany(cs => cs.Connectors)
             .ToListAsync();
-
-        if (connectors.Count <= 1)
-        {
-            throw new ArgumentException($"Connector can not be deleted ChargeStation required at least one connector.");
-        }
-
+       
         var connector = connectors.First(c => c.Id == id);
         _context.Connectors.Remove(connector);
     }

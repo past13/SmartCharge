@@ -1,6 +1,6 @@
 using System;
 
-namespace SmartCharge.Domain.Requests;
+namespace SmartCharge.Domain.Requests.Connector;
 
 public class ConnectorRequest
 {

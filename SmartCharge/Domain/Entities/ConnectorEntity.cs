@@ -65,7 +65,7 @@ public class ConnectorEntity : BaseEntity
     {
         if (newMaxCurrentInAmps <= 0)
         {
-            throw new ArgumentException("Max current must be greater than zero.", nameof(newMaxCurrentInAmps));
+            throw new ArgumentException("Max Amps must be greater than zero.");
         }
     }
 }

@@ -62,7 +62,7 @@ public class ChargeStationController : Controller
     {
         var command = new DeleteChargeStationCommand(id, groupId);
 
-        await _sender.Send(command);
-        return NoContent();
+        var result = await _sender.Send(command);
+        return Ok(result);
     }
 }

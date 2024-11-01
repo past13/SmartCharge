@@ -2,8 +2,8 @@ using AutoMapper;
 using Moq;
 using SmartCharge.Commands.Group;
 using SmartCharge.Domain.Entities;
-using SmartCharge.Domain.Requests;
 using SmartCharge.Domain.Requests.ChargeStation;
+using SmartCharge.Domain.Requests.Connector;
 using SmartCharge.Handlers.Group;
 using SmartCharge.Repository;
 using SmartCharge.UnitOfWork;
@@ -40,15 +40,15 @@ public class CreateGroupHandlerTests : DatabaseDependentTestBase
         InMemoryDb.Groups.Add(group);
         await InMemoryDb.SaveChangesAsync();
         
-        var chargeStationRequest = new GetChargeStationRequest { Name = "Test ChargeStation" };
+        var chargeStationRequest = new ChargeStationRequest { Name = "Test ChargeStation" };
         
         // Act
-        var notExist = new CreateGroupCommand("Test Group", chargeStationRequest);
-        var result = await _handler.Handle(notExist, CancellationToken.None);
+        var command = new CreateGroupCommand("Test Group", chargeStationRequest);
+        var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.False(result.IsSuccess);
-        Assert.Contains(result.Error, "A Group with the name 'Test Group' already exists.");
+        Assert.Contains(result.Error, $"A Group with the name {group.Name} already exists.");
     }
     
     [Fact]
@@ -59,7 +59,7 @@ public class CreateGroupHandlerTests : DatabaseDependentTestBase
         InMemoryDb.Groups.Add(group);
         await InMemoryDb.SaveChangesAsync();
         
-        var chargeStationRequest = new GetChargeStationRequest
+        var chargeStationRequest = new ChargeStationRequest
         {
             Name = "Test ChargeStation 1",
             Connectors =
@@ -73,8 +73,8 @@ public class CreateGroupHandlerTests : DatabaseDependentTestBase
         };
 
         // Act
-        var notExist = new CreateGroupCommand("Test Group 1", chargeStationRequest);
-        var result = await _handler.Handle(notExist, CancellationToken.None);
+        var command = new CreateGroupCommand("Test Group 1", chargeStationRequest);
+        var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -94,7 +94,7 @@ public class CreateGroupHandlerTests : DatabaseDependentTestBase
         InMemoryDb.Groups.Add(group);
         await InMemoryDb.SaveChangesAsync();
 
-        var chargeStationRequest = new GetChargeStationRequest
+        var chargeStationRequest = new ChargeStationRequest
         {
             Name = "Test ChargeStation 2",
             Connectors =
@@ -108,8 +108,8 @@ public class CreateGroupHandlerTests : DatabaseDependentTestBase
         };
         
         // Act
-        var notExist = new CreateGroupCommand("Test Group 1", chargeStationRequest);
-        var result = await _handler.Handle(notExist, CancellationToken.None);
+        var command = new CreateGroupCommand("Test Group 1", chargeStationRequest);
+        var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -130,11 +130,11 @@ public class CreateGroupHandlerTests : DatabaseDependentTestBase
         InMemoryDb.Groups.Add(group);
         await InMemoryDb.SaveChangesAsync();
         
-        var chargeStation = new GetChargeStationRequest { Name = existName };
+        var chargeStation = new ChargeStationRequest { Name = existName };
 
         // Act
-        var notExist = new CreateGroupCommand("Test Group 1", chargeStation);
-        var result = await _handler.Handle(notExist, CancellationToken.None);
+        var command = new CreateGroupCommand("Test Group 1", chargeStation);
+        var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.False(result.IsSuccess);
@@ -178,15 +178,15 @@ public class CreateGroupHandlerTests : DatabaseDependentTestBase
             }
         };
         
-        var chargeStation = new GetChargeStationRequest
+        var chargeStation = new ChargeStationRequest
         {
             Name = "Test ChargeStation",
             Connectors = connectors
         };
         
         // Act
-        var notExist = new CreateGroupCommand("Test Group 1", chargeStation);
-        var result = await _handler.Handle(notExist, CancellationToken.None);
+        var command = new CreateGroupCommand("Test Group 1", chargeStation);
+        var result = await _handler.Handle(command, CancellationToken.None);
         
         // Assert
         Assert.False(result.IsSuccess);
@@ -225,15 +225,15 @@ public class CreateGroupHandlerTests : DatabaseDependentTestBase
             }
         };
         
-        var chargeStation = new GetChargeStationRequest
+        var chargeStation = new ChargeStationRequest
         {
             Name = "Test ChargeStation",
             Connectors = connectors
         };
         
         // Act
-        var notExist = new CreateGroupCommand("Test Group 1", chargeStation);
-        var result = await _handler.Handle(notExist, CancellationToken.None);
+        var command = new CreateGroupCommand("Test Group 1", chargeStation);
+        var result = await _handler.Handle(command, CancellationToken.None);
         
         // Assert
         Assert.True(result.IsSuccess);
@@ -244,7 +244,7 @@ public class CreateGroupHandlerTests : DatabaseDependentTestBase
     public async Task Handle_ShouldReturnError_WhenChargeStationWithoutConnectors()
     {
         var connectors = new List<ConnectorRequest>();
-        var chargeStation = new GetChargeStationRequest
+        var chargeStation = new ChargeStationRequest
         {
             Name = "Test ChargeStation",
             Connectors = connectors
