@@ -42,6 +42,11 @@ public class ConnectorEntity : BaseEntity
         Name = name;
         MaxCurrentInAmps = maxCurrentInAmps;
     }
+    
+    public void UpdateStateDelete(RowState rowState)
+    {
+        RowState = rowState;
+    }
 
     public void UpdateConnectorNumber(int connectorNumber)
     {

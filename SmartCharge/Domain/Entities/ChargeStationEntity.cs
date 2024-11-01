@@ -41,6 +41,16 @@ public class ChargeStationEntity : BaseEntity
         Name = name;
     }
     
+    public void UpdateStateDelete(RowState rowState)
+    {
+        RowState = rowState;
+        
+        foreach (var connector in _connectors)
+        {
+            connector.UpdateStateDelete(rowState);
+        }
+    }
+    
     public void AddConnector(ConnectorEntity connector)
     {
         if (_connectors.Count >= 5)

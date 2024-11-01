@@ -44,6 +44,16 @@ public class GroupEntity : BaseEntity
         Name = name;
     }
     
+    public void UpdateStateDelete(RowState rowState)
+    {
+        RowState = rowState;
+        
+        foreach (var chargeStation in _chargeStations)
+        {
+            chargeStation.UpdateStateDelete(rowState);
+        }
+    }
+    
     public void AddChargeStation(ChargeStationEntity chargeStationEntity)
     {
         if (_chargeStations.Contains(chargeStationEntity))

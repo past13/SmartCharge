@@ -1,4 +1,3 @@
-using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,22 +13,27 @@ using SmartCharge.UnitOfWork;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    options.UseSqlServer("Server=localhost;Database=smartchargedb;User Id=sa;Password=Asd123456;TrustServerCertificate=True");
+});
+
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<ApplicationDbContext>());
+
 builder.Services.AddControllers();
-
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
-
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // builder.Services.AddMediatR(config =>
 // {
 //     config.RegisterServicesFromAssemblyContaining<ApplicationAssemblyReference>(); // Registers from this assembly
 // });
 
-// Alternatively, if handlers are in multiple assemblies, register each assembly once:
-builder.Services.AddMediatR(typeof(CreateGroupHandler).Assembly); 
-builder.Services.AddMediatR(typeof(CreateChargeStationHandler).Assembly); 
-builder.Services.AddMediatR(typeof(CreateConnectorHandler).Assembly);
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(CreateGroupHandler).Assembly));
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(CreateChargeStationHandler).Assembly));
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(CreateConnectorHandler).Assembly));
 
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddTransient<IGroupRepository, GroupRepository>();
 builder.Services.AddTransient<IChargeStationRepository, ChargeStationRepository>();
 builder.Services.AddTransient<IConnectorRepository, ConnectorRepository>();
@@ -37,11 +41,6 @@ builder.Services.AddTransient<IConnectorRepository, ConnectorRepository>();
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen();
-
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-{
-    options.UseSqlServer("Server=localhost;Database=smartchargedb;User Id=sa;Password=Asd123456;TrustServerCertificate=True");
-});
 
 var app = builder.Build();
 

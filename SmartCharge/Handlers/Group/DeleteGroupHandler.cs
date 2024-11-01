@@ -30,12 +30,14 @@ public class DeleteGroupHandler : IRequestHandler<DeleteGroupCommand, Result<Gro
 
         try
         {
-            var groupExist = await _groupRepository.GetGroupById(command.Id);
-            if (groupExist == null)
+            var group = await _groupRepository.GetGroupById(command.Id);
+            if (group is null)
             {
                 throw new ArgumentException($"A Group with the Id {command.Id} does not exists.");
             }
 
+            group.UpdateStateDelete(RowState.PendingDelete);
+            
             await _groupRepository.DeleteGroupById(command.Id);
 
             await _unitOfWork.SaveChangesAsync();
@@ -50,7 +52,6 @@ public class DeleteGroupHandler : IRequestHandler<DeleteGroupCommand, Result<Gro
         }
         catch (DbUpdateConcurrencyException)
         {
-            //Todo: replace with status
             await _unitOfWork.RollbackAsync();
             return Result<GroupEntity>.Failure("The Group was modified by another user since you loaded it. Please reload the data and try again.");
         }

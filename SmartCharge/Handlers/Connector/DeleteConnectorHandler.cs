@@ -59,7 +59,7 @@ public class DeleteConnectorHandler : IRequestHandler<DeleteConnectorCommand, Re
                 throw new ArgumentException($"Group with Id {chargeStation.Id} does not exists.");
             }
             
-            //Todo: set status deleting
+            connector.UpdateStateDelete(RowState.PendingDelete);
             
             var currentChargeStation = group.ChargeStations.First(cs => cs.Id == chargeStation.Id);
             currentChargeStation.RemoveConnector(connector);

@@ -40,12 +40,12 @@ public class DeleteGroupHandlerTests : DatabaseDependentTestBase
         await InMemoryDb.SaveChangesAsync();
         
         // Act
-        var notExist = new DeleteGroupCommand(Guid.NewGuid());
-        var result = await _handler.Handle(notExist, CancellationToken.None);
+        var command = new DeleteGroupCommand(Guid.NewGuid());
+        var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.False(result.IsSuccess);
-        Assert.Contains($"A Group with the Id {notExist.Id} does not exists.", result.Error);
+        Assert.Contains($"A Group with the Id {command.Id} does not exists.", result.Error);
     }
     
     [Fact]
@@ -64,8 +64,8 @@ public class DeleteGroupHandlerTests : DatabaseDependentTestBase
         await InMemoryDb.SaveChangesAsync();
         
         // Act
-        var exist = new DeleteGroupCommand(groupEntity.Id);
-        var result = await _handler.Handle(exist, CancellationToken.None);
+        var command = new DeleteGroupCommand(groupEntity.Id);
+        var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -98,8 +98,8 @@ public class DeleteGroupHandlerTests : DatabaseDependentTestBase
         await InMemoryDb.SaveChangesAsync();
         
         // Act
-        var exist = new DeleteGroupCommand(groupEntity1.Id);
-        var result = await _handler.Handle(exist, CancellationToken.None);
+        var command = new DeleteGroupCommand(groupEntity1.Id);
+        var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.True(result.IsSuccess);
