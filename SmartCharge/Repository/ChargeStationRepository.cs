@@ -7,13 +7,12 @@ using Microsoft.EntityFrameworkCore;
 using SmartCharge.DataLayer;
 using SmartCharge.Domain.DTOs;
 using SmartCharge.Domain.Entities;
-using SmartCharge.Domain.Response;
 
 namespace SmartCharge.Repository;
 
 public interface IChargeStationRepository
 {
-    Task<bool> IsNameExist(string name);
+    Task<bool> IsNameExist(string name, Guid? id = null);
     Task<bool> IsChargeStationExist(Guid id);
     Task AddChargeStation(ChargeStationEntity chargeStation);
     Task<ChargeStationEntity?> GetChargeStationById(Guid id);
@@ -37,12 +36,10 @@ public class ChargeStationRepository : IChargeStationRepository
         _connectorRepository = connectorRepository;
     }
     
-    public async Task<bool> IsNameExist(string name)
+    public async Task<bool> IsNameExist(string name, Guid? id)
     {
-        var isNameValid = await _context.ChargeStations
-            .AnyAsync(g => g.Name.ToLower() == name.ToLower());
-        
-        return isNameValid;
+        return await _context.ChargeStations
+            .AnyAsync(g => g.Name.ToLower() == name.ToLower() && (!id.HasValue || g.Id != id.Value));
     }
     
     public async Task<bool> IsChargeStationExist(Guid id)

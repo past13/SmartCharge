@@ -12,7 +12,7 @@ namespace SmartCharge.Repository;
 
 public interface IGroupRepository
 {
-    Task<bool> IsNameExist(string name);
+    Task<bool> IsNameExist(string name, Guid? id = null);
     Task<GroupEntity> AddGroup(GroupEntity group);
     Task<GroupEntity?> GetGroupById(Guid id);
     Task<GroupEntity?> GetGroupByChargeStationId(Guid chargeStationId);
@@ -36,12 +36,10 @@ public class GroupRepository : IGroupRepository
         _chargeStationRepository = chargeStationRepository;
     }
     
-    public async Task<bool> IsNameExist(string name)
+    public async Task<bool> IsNameExist(string name, Guid? id)
     {
-        var isNameValid = await _context.Groups
-            .AnyAsync(g => g.Name.ToLower() == name.ToLower());
-        
-        return isNameValid;
+        return await _context.Groups
+            .AnyAsync(g => g.Name.ToLower() == name.ToLower() && (!id.HasValue || g.Id != id.Value));
     }
     
     public async Task<IEnumerable<GroupDto>> GetAllGroups()

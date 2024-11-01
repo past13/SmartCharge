@@ -30,7 +30,7 @@ public class UpdateGroupHandler : IRequestHandler<UpdateGroupCommand, Result<Gro
         try
         {
             var groupName = command.Name.Trim();
-            var groupNameExist = await _groupRepository.IsNameExist(groupName);
+            var groupNameExist = await _groupRepository.IsNameExist(groupName, command.Id);
             if (groupNameExist)
             {
                 throw new ArgumentException($"A Group with the name {groupName} already exists.");

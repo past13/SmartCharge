@@ -35,7 +35,7 @@ public class UpdateChargeStationHandler : IRequestHandler<UpdateChargeStationCom
         try
         {
             var chargeStationName = command.Name.Trim();
-            var chargeStationNameExist = await _chargeStationRepository.IsNameExist(chargeStationName);
+            var chargeStationNameExist = await _chargeStationRepository.IsNameExist(chargeStationName, command.Id);
             if (chargeStationNameExist)
             {
                 throw new ArgumentException($"A ChargeStation with the name {chargeStationName} already exists.");

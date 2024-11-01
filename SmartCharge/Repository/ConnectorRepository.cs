@@ -12,7 +12,7 @@ namespace SmartCharge.Repository;
 
 public interface IConnectorRepository
 {
-    Task<bool> IsNameExist(string name);
+    Task<bool> IsNameExist(string name, Guid? id = null);
     Task AddConnector(ConnectorEntity connectorEntity);
     Task<ConnectorEntity?> GetConnectorById(Guid id);
     Task DeleteConnectorById(Guid id);
@@ -33,12 +33,10 @@ public class ConnectorRepository : IConnectorRepository
         _mapper = mapper;
     }
     
-    public async Task<bool> IsNameExist(string name)
+    public async Task<bool> IsNameExist(string name, Guid? id)
     {
-        var isNameValid = await _context.Connectors
-            .AnyAsync(g => g.Name.ToLower() == name.ToLower());
-        
-        return isNameValid;
+        return await _context.Connectors
+            .AnyAsync(g => g.Name.ToLower() == name.ToLower() && (!id.HasValue || g.Id != id.Value));
     }
     
     public async Task<IEnumerable<ConnectorEntity>> GetAllConnectorsById(List<Guid> ids)

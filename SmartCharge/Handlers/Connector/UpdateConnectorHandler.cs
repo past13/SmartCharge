@@ -37,7 +37,7 @@ public class UpdateConnectorHandler : IRequestHandler<UpdateConnectorCommand, Re
         try
         {
             var connectorName = command.Name.Trim();
-            var connectorNameExist = await _connectorRepository.IsNameExist(connectorName);
+            var connectorNameExist = await _connectorRepository.IsNameExist(connectorName, command.Id);
             if (connectorNameExist)
             {
                 throw new ArgumentException($"A Connector with the name {connectorName} already exists.");
