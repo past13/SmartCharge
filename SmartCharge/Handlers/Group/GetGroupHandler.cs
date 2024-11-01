@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
 using SmartCharge.Commands.Group;
+using SmartCharge.Domain.DTOs;
 using SmartCharge.Domain.Entities;
 using SmartCharge.Domain.Response;
 using SmartCharge.Repository;
@@ -11,7 +12,7 @@ using SmartCharge.UnitOfWork;
 
 namespace SmartCharge.Handlers.Group;
 
-public class GetGroupHandler : IRequestHandler<GetGroupByIdQuery, Result<GroupEntity>>
+public class GetGroupHandler : IRequestHandler<GetGroupByIdQuery, Result<GroupDto>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IGroupRepository _groupRepository;
@@ -27,7 +28,7 @@ public class GetGroupHandler : IRequestHandler<GetGroupByIdQuery, Result<GroupEn
         _mapper = mapper;
     }
     
-    public async Task<Result<GroupEntity>> Handle(GetGroupByIdQuery query, CancellationToken cancellationToken)
+    public async Task<Result<GroupDto>> Handle(GetGroupByIdQuery query, CancellationToken cancellationToken)
     {
         await _unitOfWork.BeginTransactionAsync();
 
@@ -43,17 +44,17 @@ public class GetGroupHandler : IRequestHandler<GetGroupByIdQuery, Result<GroupEn
             
             await _unitOfWork.CommitAsync();
             
-            return Result<GroupEntity>.Success(group);
+            return Result<GroupDto>.Success(_mapper.Map<GroupDto>(group));
         }
         catch (ArgumentException ex)
         {
             await _unitOfWork.RollbackAsync();
-            return Result<GroupEntity>.Failure(ex.Message);
+            return Result<GroupDto>.Failure(ex.Message);
         }
         catch (Exception ex)
         {
             await _unitOfWork.RollbackAsync();
-            return Result<GroupEntity>.Failure(ex.Message);
+            return Result<GroupDto>.Failure(ex.Message);
         }
     }
 }

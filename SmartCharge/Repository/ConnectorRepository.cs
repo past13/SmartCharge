@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using SmartCharge.DataLayer;
 using SmartCharge.Domain.DTOs;
 using SmartCharge.Domain.Entities;
-using SmartCharge.Domain.Response;
 
 namespace SmartCharge.Repository;
 
@@ -36,7 +35,7 @@ public class ConnectorRepository : IConnectorRepository
     
     public async Task<bool> IsNameExist(string name)
     {
-        var isNameValid = await _context.Connector
+        var isNameValid = await _context.Connectors
             .AnyAsync(g => g.Name.ToLower() == name.ToLower());
         
         return isNameValid;
@@ -44,7 +43,7 @@ public class ConnectorRepository : IConnectorRepository
     
     public async Task<IEnumerable<ConnectorEntity>> GetAllConnectorsById(List<Guid> ids)
     {
-        var result = await _context.Connector
+        var result = await _context.Connectors
             .Where(c => ids.Contains(c.Id))
             .ToListAsync();
         
@@ -53,7 +52,7 @@ public class ConnectorRepository : IConnectorRepository
     
     public async Task<IEnumerable<ConnectorDto>> GetAllConnectors()
     {
-        var result = await _context.Connector
+        var result = await _context.Connectors
             .ToListAsync();
         
         return _mapper.Map<IEnumerable<ConnectorDto>>(result);
@@ -61,12 +60,12 @@ public class ConnectorRepository : IConnectorRepository
     
     public async Task AddConnector(ConnectorEntity connector)
     {
-        _context.Connector.Add(connector);
+        _context.Connectors.Add(connector);
     }
 
     public async Task<ConnectorEntity?> GetConnectorById(Guid id)
     {
-        return await _context.Connector.FindAsync(id);
+        return await _context.Connectors.FindAsync(id);
     }
     
     public async Task DeleteConnectorById(Guid id)
@@ -82,6 +81,6 @@ public class ConnectorRepository : IConnectorRepository
         }
 
         var connector = connectors.First(c => c.Id == id);
-        _context.Connector.Remove(connector);
+        _context.Connectors.Remove(connector);
     }
 }

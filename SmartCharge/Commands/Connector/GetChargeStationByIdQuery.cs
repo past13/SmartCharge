@@ -1,11 +1,11 @@
 ﻿using System;
 using MediatR;
-using SmartCharge.Domain.Entities;
+using SmartCharge.Domain.DTOs;
 using SmartCharge.Domain.Response;
 
 namespace SmartCharge.Commands.Connector;
 
-public class GetConnectorByIdQuery: IRequest<Result<ConnectorEntity>>
+public class GetConnectorByIdQuery: IRequest<Result<ConnectorDto>>
 {
     public Guid Id { get; }
 

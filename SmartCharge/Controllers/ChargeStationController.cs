@@ -1,15 +1,15 @@
+using System;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SmartCharge.Commands;
 using SmartCharge.Commands.ChargeStation;
-using SmartCharge.Commands.Group;
+using SmartCharge.Domain.Requests.ChargeStation;
 using SmartCharge.Repository;
 
 namespace SmartCharge.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 public class ChargeStationController : Controller
 {
     private readonly ISender _sender;
@@ -23,31 +23,46 @@ public class ChargeStationController : Controller
         _chargeStationRepository = chargeStationRepository;
     }
     
-    [HttpPost]
-    public async Task<IActionResult> AddChargeStation(CreateChargeStationCommand command)
+    [HttpGet("all")]
+    public async Task<IActionResult> GetAllChargeStations()
     {
+        var chargeStation = await _chargeStationRepository.GetAllChargeStations();
+        return Ok(chargeStation);
+    }
+    
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> GetChargeStation(Guid id)
+    {
+        var command = new GetChargeStationByIdQuery(id);
+        
+        var chargeStation = await _sender.Send(command);
+        return Ok(chargeStation);
+    }
+    
+    [HttpPost]
+    public async Task<IActionResult> AddChargeStation([FromBody]CreateChargeStationRequest request)
+    {
+        var command = new CreateChargeStationCommand(request.GroupId, request.Name, request.Connectors);
+        
         var chargeStation = await _sender.Send(command);
         return Ok(chargeStation);
     }
     
     [HttpPut]
-    public async Task<IActionResult> UpdateGroup(UpdateGroupCommand command)
+    public async Task<IActionResult> UpdateChargeStation([FromBody]UpdateChargeStationRequest request)
     {
+        var command = new UpdateChargeStationCommand(request.Id, request.GroupId, request.Name);
+        
         var chargeStation = await _sender.Send(command);
         return Ok(chargeStation);
     }
     
-    [HttpDelete]
-    public async Task<IActionResult> DeleteGroupById(DeleteGroupCommand command)
+    [HttpDelete("{id:guid}/{groupId:guid}")]
+    public async Task<IActionResult> DeleteChargeStation(Guid id, Guid groupId)
     {
+        var command = new DeleteChargeStationCommand(id, groupId);
+
         await _sender.Send(command);
         return NoContent();
-    }
-    
-    [HttpGet]
-    public async Task<IActionResult> GetAllGroups()
-    {
-        var chargeStation = await _chargeStationRepository.GetAllChargeStations();
-        return Ok(chargeStation);
     }
 }

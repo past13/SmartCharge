@@ -9,7 +9,7 @@ public class ApplicationDbContext : DbContext
     
     public DbSet<GroupEntity> Groups { get; set; }
     public DbSet<ChargeStationEntity> ChargeStations { get; set; }
-    public DbSet<ConnectorEntity> Connector { get; set; }
+    public DbSet<ConnectorEntity> Connectors { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -23,9 +23,6 @@ public class ApplicationDbContext : DbContext
             entity.HasMany(g => g.ChargeStations)
                 .WithOne(cs => cs.GroupEntity)
                 .HasForeignKey(cs => cs.GroupId);
-            
-            entity.Property(cs => cs.RowState)
-                .HasDefaultValue(RowState.Active);
         });
         
         modelBuilder.Entity<ChargeStationEntity>(entity =>
@@ -38,9 +35,6 @@ public class ApplicationDbContext : DbContext
             entity.HasOne(cs => cs.GroupEntity)
                 .WithMany(g => g.ChargeStations)
                 .HasForeignKey(cs => cs.GroupId);
-            
-            entity.Property(cs => cs.RowState)
-                .HasDefaultValue(RowState.Active);
         });
         
         modelBuilder.Entity<ConnectorEntity>(entity =>
@@ -60,9 +54,6 @@ public class ApplicationDbContext : DbContext
             entity.HasOne(cs => cs.ChargeStation)
                 .WithMany(g => g.Connectors)
                 .HasForeignKey(cs => cs.ChargeStationId);
-            
-            entity.Property(cs => cs.RowState)
-                .HasDefaultValue(RowState.Active);
         });
     }
 }

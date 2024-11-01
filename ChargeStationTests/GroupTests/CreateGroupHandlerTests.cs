@@ -3,6 +3,7 @@ using Moq;
 using SmartCharge.Commands.Group;
 using SmartCharge.Domain.Entities;
 using SmartCharge.Domain.Requests;
+using SmartCharge.Domain.Requests.ChargeStation;
 using SmartCharge.Handlers.Group;
 using SmartCharge.Repository;
 using SmartCharge.UnitOfWork;
@@ -28,7 +29,7 @@ public class CreateGroupHandlerTests : DatabaseDependentTestBase
         
         _groupRepository = new GroupRepository(InMemoryDb, _mapper.Object, _chargeStationRepository);
         
-        _handler = new CreateGroupHandler(_unitOfWork, _groupRepository, _chargeStationRepository);
+        _handler = new CreateGroupHandler(_unitOfWork, _mapper.Object, _groupRepository, _chargeStationRepository);
     }
     
     [Fact]
@@ -39,7 +40,7 @@ public class CreateGroupHandlerTests : DatabaseDependentTestBase
         InMemoryDb.Groups.Add(group);
         await InMemoryDb.SaveChangesAsync();
         
-        var chargeStationRequest = new ChargeStationRequest { Name = "Test ChargeStation" };
+        var chargeStationRequest = new GetChargeStationRequest { Name = "Test ChargeStation" };
         
         // Act
         var notExist = new CreateGroupCommand("Test Group", chargeStationRequest);
@@ -58,12 +59,12 @@ public class CreateGroupHandlerTests : DatabaseDependentTestBase
         InMemoryDb.Groups.Add(group);
         await InMemoryDb.SaveChangesAsync();
         
-        var chargeStationRequest = new ChargeStationRequest
+        var chargeStationRequest = new GetChargeStationRequest
         {
             Name = "Test ChargeStation 1",
             Connectors =
             [
-                new()
+                new ConnectorRequest
                 {
                     Name = "Test Connector 1",
                     MaxCapacityInAmps = 1
@@ -93,12 +94,12 @@ public class CreateGroupHandlerTests : DatabaseDependentTestBase
         InMemoryDb.Groups.Add(group);
         await InMemoryDb.SaveChangesAsync();
 
-        var chargeStationRequest = new ChargeStationRequest
+        var chargeStationRequest = new GetChargeStationRequest
         {
             Name = "Test ChargeStation 2",
             Connectors =
             [
-                new()
+                new ConnectorRequest
                 {
                     Name = "Test Connector 1",
                     MaxCapacityInAmps = 1
@@ -129,7 +130,7 @@ public class CreateGroupHandlerTests : DatabaseDependentTestBase
         InMemoryDb.Groups.Add(group);
         await InMemoryDb.SaveChangesAsync();
         
-        var chargeStation = new ChargeStationRequest { Name = existName };
+        var chargeStation = new GetChargeStationRequest { Name = existName };
 
         // Act
         var notExist = new CreateGroupCommand("Test Group 1", chargeStation);
@@ -177,7 +178,7 @@ public class CreateGroupHandlerTests : DatabaseDependentTestBase
             }
         };
         
-        var chargeStation = new ChargeStationRequest
+        var chargeStation = new GetChargeStationRequest
         {
             Name = "Test ChargeStation",
             Connectors = connectors
@@ -224,7 +225,7 @@ public class CreateGroupHandlerTests : DatabaseDependentTestBase
             }
         };
         
-        var chargeStation = new ChargeStationRequest
+        var chargeStation = new GetChargeStationRequest
         {
             Name = "Test ChargeStation",
             Connectors = connectors
@@ -243,8 +244,7 @@ public class CreateGroupHandlerTests : DatabaseDependentTestBase
     public async Task Handle_ShouldReturnError_WhenChargeStationWithoutConnectors()
     {
         var connectors = new List<ConnectorRequest>();
-        
-        var chargeStation = new ChargeStationRequest
+        var chargeStation = new GetChargeStationRequest
         {
             Name = "Test ChargeStation",
             Connectors = connectors

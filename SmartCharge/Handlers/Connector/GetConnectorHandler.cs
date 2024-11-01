@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
 using SmartCharge.Commands.Connector;
+using SmartCharge.Domain.DTOs;
 using SmartCharge.Domain.Entities;
 using SmartCharge.Domain.Response;
 using SmartCharge.Repository;
@@ -11,7 +12,7 @@ using SmartCharge.UnitOfWork;
 
 namespace SmartCharge.Handlers.Connector;
 
-public class GetConnectorHandler : IRequestHandler<GetConnectorByIdQuery, Result<ConnectorEntity>>
+public class GetConnectorHandler : IRequestHandler<GetConnectorByIdQuery, Result<ConnectorDto>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IConnectorRepository _connectorRepository;
@@ -27,7 +28,7 @@ public class GetConnectorHandler : IRequestHandler<GetConnectorByIdQuery, Result
         _mapper = mapper;
     }
     
-    public async Task<Result<ConnectorEntity>> Handle(GetConnectorByIdQuery query, CancellationToken cancellationToken)
+    public async Task<Result<ConnectorDto>> Handle(GetConnectorByIdQuery query, CancellationToken cancellationToken)
     {
         await _unitOfWork.BeginTransactionAsync();
 
@@ -43,17 +44,17 @@ public class GetConnectorHandler : IRequestHandler<GetConnectorByIdQuery, Result
             
             await _unitOfWork.CommitAsync();
             
-            return Result<ConnectorEntity>.Success(connector);
+            return Result<ConnectorDto>.Success(_mapper.Map<ConnectorDto>(connector));
         }
         catch (ArgumentException ex)
         {
             await _unitOfWork.RollbackAsync();
-            return Result<ConnectorEntity>.Failure(ex.Message);
+            return Result<ConnectorDto>.Failure(ex.Message);
         }
         catch (Exception ex)
         {
             await _unitOfWork.RollbackAsync();
-            return Result<ConnectorEntity>.Failure(ex.Message);
+            return Result<ConnectorDto>.Failure(ex.Message);
         }
     }
 }

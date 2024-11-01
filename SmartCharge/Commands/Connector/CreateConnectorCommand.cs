@@ -1,11 +1,11 @@
 using System;
 using MediatR;
-using SmartCharge.Domain.Entities;
+using SmartCharge.Domain.DTOs;
 using SmartCharge.Domain.Response;
 
 namespace SmartCharge.Commands.Connector;
 
-public class CreateConnectorCommand : IRequest<Result<ConnectorEntity>>
+public class CreateConnectorCommand : IRequest<Result<ConnectorDto>>
 {
     public string Name { get; set; }
     public int CapacityInAmps { get; set; }

@@ -94,6 +94,6 @@ public class DeleteChargeStationHandlerTests : DatabaseDependentTestBase
         // Assert
         Assert.True(result.IsSuccess);
         Assert.Equal(1, InMemoryDb.ChargeStations.Count());
-        Assert.Equal(1, InMemoryDb.Connector.Count());
+        Assert.Equal(1, InMemoryDb.Connectors.Count());
     }
 }

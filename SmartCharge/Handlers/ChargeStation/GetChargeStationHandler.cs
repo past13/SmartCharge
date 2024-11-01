@@ -4,14 +4,14 @@ using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
 using SmartCharge.Commands.ChargeStation;
-using SmartCharge.Domain.Entities;
+using SmartCharge.Domain.DTOs;
 using SmartCharge.Domain.Response;
 using SmartCharge.Repository;
 using SmartCharge.UnitOfWork;
 
 namespace SmartCharge.Handlers.ChargeStation;
 
-public class GetChargeStationHandler : IRequestHandler<GetChargeStationByIdQuery, Result<ChargeStationEntity>>
+public class GetChargeStationHandler : IRequestHandler<GetChargeStationByIdQuery, Result<ChargeStationDto>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IChargeStationRepository _chargeStationRepository;
@@ -27,7 +27,7 @@ public class GetChargeStationHandler : IRequestHandler<GetChargeStationByIdQuery
         _mapper = mapper;
     }
     
-    public async Task<Result<ChargeStationEntity>> Handle(GetChargeStationByIdQuery query, CancellationToken cancellationToken)
+    public async Task<Result<ChargeStationDto>> Handle(GetChargeStationByIdQuery query, CancellationToken cancellationToken)
     {
         await _unitOfWork.BeginTransactionAsync();
 
@@ -43,17 +43,17 @@ public class GetChargeStationHandler : IRequestHandler<GetChargeStationByIdQuery
             
             await _unitOfWork.CommitAsync();
             
-            return Result<ChargeStationEntity>.Success(chargeStation);
+            return Result<ChargeStationDto>.Success(_mapper.Map<ChargeStationDto>(chargeStation));
         }
         catch (ArgumentException ex)
         {
             await _unitOfWork.RollbackAsync();
-            return Result<ChargeStationEntity>.Failure(ex.Message);
+            return Result<ChargeStationDto>.Failure(ex.Message);
         }
         catch (Exception ex)
         {
             await _unitOfWork.RollbackAsync();
-            return Result<ChargeStationEntity>.Failure(ex.Message);
+            return Result<ChargeStationDto>.Failure(ex.Message);
         }
     }
 }

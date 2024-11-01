@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace SmartCharge.Domain.Requests;
+namespace SmartCharge.Domain.Requests.ChargeStation;
 
-public class ChargeStationRequest
+public class GetChargeStationRequest
 {
     public Guid Id { get; set; }
     public string Name { get; set; }
