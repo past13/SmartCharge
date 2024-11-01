@@ -22,7 +22,7 @@ public class GetConnectorHandlerTests : DatabaseDependentTestBase
     }
 
     [Fact]
-    public async Task Handle_ShouldReturnSuccess_WhenGroupExists()
+    public async Task Handle_ShouldReturnSuccess_WhenConnectorExists()
     {
         var group = GroupEntity.Create("Test Group 1");
         var chargeStation = ChargeStationEntity.Create("Test ChargeStation 1");
@@ -43,7 +43,7 @@ public class GetConnectorHandlerTests : DatabaseDependentTestBase
     }
     
     [Fact]
-    public async Task Handle_ShouldReturnError_WhenGroupNotExists()
+    public async Task Handle_ShouldReturnError_WhenConnectorNotExists()
     {
         var group = GroupEntity.Create("Test Group 1");
         var chargeStation = ChargeStationEntity.Create("Test ChargeStation 1");
@@ -67,7 +67,7 @@ public class GetConnectorHandlerTests : DatabaseDependentTestBase
     }
     
     [Fact]
-    public async Task Handle_ShouldReturnError_WhenGroupRowSateDeleting()
+    public async Task Handle_ShouldReturnError_WhenConnectorRowSateDeleting()
     {
         var group = GroupEntity.Create("Test Group 1");
         var chargeStation = ChargeStationEntity.Create("Test ChargeStation 1");

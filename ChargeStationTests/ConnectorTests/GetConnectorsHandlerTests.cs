@@ -1,43 +1,40 @@
-﻿using SmartCharge.Commands.Group;
+﻿using SmartCharge.Commands.Connector;
 using SmartCharge.Domain.Entities;
-using SmartCharge.Handlers.Group;
+using SmartCharge.Handlers.Connector;
 using SmartCharge.Repository;
 using SmartCharge.UnitOfWork;
 
-namespace ChargeStationTests.GroupTests;
+namespace ChargeStationTests.ConnectorTests;
 
-public class GetGroupsHandlerTests : DatabaseDependentTestBase
+public class GetConnectorsHandlerTests : DatabaseDependentTestBase
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly GroupRepository _groupRepository;
-    private readonly IChargeStationRepository _chargeStationRepository;
     private readonly IConnectorRepository _connectorRepository;
-    private readonly GetGroupsHandler _handler;
+
+    private readonly GetConnectorsHandler _handler;
     
-    public GetGroupsHandlerTests()
+    public GetConnectorsHandlerTests()
     {
         _unitOfWork = new UnitOfWork(InMemoryDb);
         _connectorRepository = new ConnectorRepository(InMemoryDb);
-        _chargeStationRepository = new ChargeStationRepository(InMemoryDb, _connectorRepository);
-        _groupRepository = new GroupRepository(InMemoryDb, _chargeStationRepository);
         
-        _handler = new GetGroupsHandler(_unitOfWork, _groupRepository);
+        _handler = new GetConnectorsHandler(_unitOfWork, _connectorRepository);
     }
 
     [Fact]
-    public async Task Handle_ShouldReturnSuccess_WhenGroupsExists()
+    public async Task Handle_ShouldReturnSuccess_WhenConnectorsExists()
     {
         var group1 = GroupEntity.Create("Test Group 1");
         var chargeStation1 = ChargeStationEntity.Create("Test ChargeStation 1");
         var connector1 = ConnectorEntity.Create("Test Connector 1", 1);
-
+        
         chargeStation1.AddConnector(connector1);
         group1.AddChargeStation(chargeStation1);
         
         var group2 = GroupEntity.Create("Test Group 2");
         var chargeStation2 = ChargeStationEntity.Create("Test ChargeStation 2");
-        var connector2 = ConnectorEntity.Create("Test Connector 2", 1);
-
+        var connector2 = ConnectorEntity.Create("Test Connector 2", 2);
+        
         chargeStation2.AddConnector(connector2);
         group2.AddChargeStation(chargeStation2);
         
@@ -45,19 +42,19 @@ public class GetGroupsHandlerTests : DatabaseDependentTestBase
         await InMemoryDb.SaveChangesAsync();
         
         // Act
-        var command = new GetGroupsQuery();
+        var command = new GetConnectorsQuery();
         var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.Equal(2, result.Data.Count());
+        Assert.Equal(2, result.Data.Count());    
     }
     
     [Fact]
-    public async Task Handle_ShouldReturnSuccess_WhenGroupsNotExists()
+    public async Task Handle_ShouldReturnSuccess_WhenConnectorsNotExists()
     {
         // Act
-        var command = new GetGroupsQuery();
+        var command = new GetConnectorsQuery();
         var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
