@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SmartCharge.Domain.Entities;
 
 namespace SmartCharge.DataLayer;
@@ -24,6 +23,9 @@ public class ApplicationDbContext : DbContext
             entity.HasMany(g => g.ChargeStations)
                 .WithOne(cs => cs.GroupEntity)
                 .HasForeignKey(cs => cs.GroupId);
+            
+            entity.Property(cs => cs.RowState)
+                .HasDefaultValue(RowState.Active);
         });
         
         modelBuilder.Entity<ChargeStationEntity>(entity =>
@@ -36,6 +38,9 @@ public class ApplicationDbContext : DbContext
             entity.HasOne(cs => cs.GroupEntity)
                 .WithMany(g => g.ChargeStations)
                 .HasForeignKey(cs => cs.GroupId);
+            
+            entity.Property(cs => cs.RowState)
+                .HasDefaultValue(RowState.Active);
         });
         
         modelBuilder.Entity<ConnectorEntity>(entity =>
@@ -55,6 +60,9 @@ public class ApplicationDbContext : DbContext
             entity.HasOne(cs => cs.ChargeStation)
                 .WithMany(g => g.Connectors)
                 .HasForeignKey(cs => cs.ChargeStationId);
+            
+            entity.Property(cs => cs.RowState)
+                .HasDefaultValue(RowState.Active);
         });
     }
 }
