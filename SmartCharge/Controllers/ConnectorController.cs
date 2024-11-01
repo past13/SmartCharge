@@ -35,8 +35,8 @@ public class ConnectorController : Controller
     {
         var command = new GetConnectorByIdQuery(id);
         
-        var connector = await _sender.Send(command);
-        return Ok(connector);
+        var result = await _sender.Send(command);
+        return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
     }
     
     [HttpPost]
@@ -44,8 +44,8 @@ public class ConnectorController : Controller
     {
         var command = new CreateConnectorCommand(request.Name, request.CapacityInAmps, request.ChargeStationId);
         
-        var connector = await _sender.Send(command);
-        return Ok(connector);
+        var result = await _sender.Send(command);
+        return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
     }
     
     [HttpPut]
@@ -53,8 +53,9 @@ public class ConnectorController : Controller
     {
         var command = new UpdateConnectorCommand(request.Id, request.ChargeStationId, request.Name, request.MaxCurrentInAmps);
         
-        var connector = await _sender.Send(command);
-        return Ok(connector);
+        var result = await _sender.Send(command);
+        return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
+
     }
     
     [HttpDelete("{chargeStationId:guid}/{id:guid}")]
@@ -62,7 +63,7 @@ public class ConnectorController : Controller
     {
         var command = new DeleteConnectorCommand(chargeStationId, id);
         
-        await _sender.Send(command);
-        return NoContent();
+        var result = await _sender.Send(command);
+        return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
     }
 }

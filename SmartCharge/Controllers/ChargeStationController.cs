@@ -35,8 +35,8 @@ public class ChargeStationController : Controller
     {
         var command = new GetChargeStationByIdQuery(id);
         
-        var chargeStation = await _sender.Send(command);
-        return Ok(chargeStation);
+        var result = await _sender.Send(command);
+        return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
     }
     
     [HttpPost]
@@ -44,8 +44,8 @@ public class ChargeStationController : Controller
     {
         var command = new CreateChargeStationCommand(request.GroupId, request.Name, request.Connectors);
         
-        var chargeStation = await _sender.Send(command);
-        return Ok(chargeStation);
+        var result = await _sender.Send(command);
+        return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
     }
     
     [HttpPut]
@@ -53,8 +53,8 @@ public class ChargeStationController : Controller
     {
         var command = new UpdateChargeStationCommand(request.Id, request.GroupId, request.Name);
         
-        var chargeStation = await _sender.Send(command);
-        return Ok(chargeStation);
+        var result = await _sender.Send(command);
+        return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
     }
     
     [HttpDelete("{id:guid}/{groupId:guid}")]
@@ -63,6 +63,6 @@ public class ChargeStationController : Controller
         var command = new DeleteChargeStationCommand(id, groupId);
 
         var result = await _sender.Send(command);
-        return Ok(result);
+        return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
     }
 }

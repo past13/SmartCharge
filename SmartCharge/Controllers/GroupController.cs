@@ -33,8 +33,8 @@ public class GroupController : Controller
     {
         var command = new GetGroupByIdQuery(id);
         
-        var group = await _sender.Send(command);
-        return Ok(group);
+        var result = await _sender.Send(command);
+        return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
     }
     
     [HttpPost]
@@ -42,8 +42,8 @@ public class GroupController : Controller
     {
         var command = new CreateGroupCommand(request.Name, request.ChargeStation);
 
-        var group = await _sender.Send(command);
-        return Ok(group);
+        var result = await _sender.Send(command);
+        return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
     }
     
     [HttpPut]
@@ -51,8 +51,8 @@ public class GroupController : Controller
     {
         var command = new UpdateGroupCommand(request.Id, request.Name);
         
-        var group = await _sender.Send(command);
-        return Ok(group);
+        var result = await _sender.Send(command);
+        return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
     }
     
     [HttpDelete("{id:guid}")]
@@ -61,6 +61,7 @@ public class GroupController : Controller
         var command = new DeleteGroupCommand(id);
 
         var result = await _sender.Send(command);
-        return Ok(result);
+        return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
+
     }
 }

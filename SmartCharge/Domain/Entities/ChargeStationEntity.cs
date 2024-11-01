@@ -91,15 +91,24 @@ public class ChargeStationEntity : BaseEntity
             .Select(c => c.ConnectorNumber)
             .ToHashSet();
         
-        var nextConnectorNumber = Enumerable.Range(1, 5).FirstOrDefault(n => !occupiedNumbers.Contains(n));
-        if (nextConnectorNumber == 0)
+        var availableConnectorNumbers = Enumerable.Range(1, 5).Where(n => !occupiedNumbers.Contains(n)).ToList();
+        if (availableConnectorNumbers.Count == 0)
         {
             throw new InvalidOperationException("No available connector numbers.");
         }
 
         foreach (var connector in _connectors)
         {
-            connector.UpdateConnectorNumber(nextConnectorNumber);
+            var nextAvailableNumber = availableConnectorNumbers.FirstOrDefault();
+
+            if (connector.ConnectorNumber != 0 && occupiedNumbers.Contains(connector.ConnectorNumber) ||
+                nextAvailableNumber == 0)
+            {
+                continue;
+            }
+            
+            connector.UpdateConnectorNumber(nextAvailableNumber);
+            availableConnectorNumbers.Remove(nextAvailableNumber);
         }
     }
     

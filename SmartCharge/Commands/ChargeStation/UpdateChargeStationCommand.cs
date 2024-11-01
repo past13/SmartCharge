@@ -1,11 +1,11 @@
 using System;
 using MediatR;
-using SmartCharge.Domain.Entities;
+using SmartCharge.Domain.DTOs;
 using SmartCharge.Domain.Response;
 
 namespace SmartCharge.Commands.ChargeStation;
 
-public class UpdateChargeStationCommand : IRequest<Result<ChargeStationEntity>>
+public class UpdateChargeStationCommand : IRequest<Result<ChargeStationDto>>
 {
     public Guid Id { get; set; }
     public Guid GroupId  { get; set; }
