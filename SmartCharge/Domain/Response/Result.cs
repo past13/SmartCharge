@@ -2,8 +2,8 @@ namespace SmartCharge.Domain.Response;
 
 public class Result<T>
 {
-    public T Data { get; set; }
-    public string Error { get; set; }
+    public T Data { get; private set; }
+    public string Error { get; private set; }
     public bool IsSuccess => string.IsNullOrEmpty(Error);
     
     private Result(T value, string errorMessage)

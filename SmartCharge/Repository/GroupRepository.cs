@@ -55,7 +55,6 @@ public class GroupRepository : IGroupRepository
     
     public async Task<GroupEntity> AddGroup(GroupEntity group)
     {
-        //Todo: add try catchs
         _context.Groups.Add(group);
         await _context.SaveChangesAsync();
         

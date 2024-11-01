@@ -63,7 +63,6 @@ public class DeleteChargeStationHandler : IRequestHandler<DeleteChargeStationCom
         }
         catch (DbUpdateConcurrencyException)
         {
-            //Todo: replace with status
             await _unitOfWork.RollbackAsync();
             return Result<ChargeStationEntity>.Failure("The ChargeStation was modified by another user since you loaded it. Please reload the data and try again.");
         }
