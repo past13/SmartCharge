@@ -5,6 +5,4 @@ using SmartCharge.Domain.Response;
 
 namespace SmartCharge.Commands.ChargeStation;
 
-public class GetChargeStationsQuery: IRequest<Result<IEnumerable<ChargeStationEntity>>>
-{
-}
+public class GetChargeStationsQuery: IRequest<Result<IEnumerable<ChargeStationEntity>>> {}

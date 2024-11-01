@@ -5,6 +5,4 @@ using SmartCharge.Domain.Response;
 
 namespace SmartCharge.Commands.Group;
 
-public class GetGroupsQuery : IRequest<Result<IEnumerable<GroupEntity>>>
-{
-}
+public class GetGroupsQuery : IRequest<Result<IEnumerable<GroupEntity>>> {}

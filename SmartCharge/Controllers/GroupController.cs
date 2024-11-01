@@ -12,27 +12,18 @@ namespace SmartCharge.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class GroupController : Controller
+public class GroupController(
+    ISender sender,
+    IMapper mapper) : Controller
 {
-    private readonly ISender _sender;
-    private readonly IMapper _mapper;
-
-    public GroupController(
-        ISender sender,
-        IMapper mapper)
-    {
-        _sender = sender;
-        _mapper = mapper;
-    }
-    
     [HttpGet("all")]
     public async Task<IActionResult> GetAllGroups()
     {
         var command = new GetGroupsQuery();
         
-        var result = await _sender.Send(command);
+        var result = await sender.Send(command);
         
-        return result.IsSuccess ? Ok(_mapper.Map<IEnumerable<GroupDto>>(result.Data)) : BadRequest(result.Error);
+        return result.IsSuccess ? Ok(mapper.Map<IEnumerable<GroupDto>>(result.Data)) : BadRequest(result.Error);
     }
     
     [HttpGet("{id:guid}")]
@@ -40,8 +31,8 @@ public class GroupController : Controller
     {
         var command = new GetGroupByIdQuery(id);
         
-        var result = await _sender.Send(command);
-        return result.IsSuccess ? Ok(_mapper.Map<GroupDto>(result.Data)) : BadRequest(result.Error);
+        var result = await sender.Send(command);
+        return result.IsSuccess ? Ok(mapper.Map<GroupDto>(result.Data)) : BadRequest(result.Error);
     }
     
     [HttpPost]
@@ -49,8 +40,8 @@ public class GroupController : Controller
     {
         var command = new CreateGroupCommand(request.Name, request.ChargeStation);
 
-        var result = await _sender.Send(command);
-        return result.IsSuccess ? Ok(_mapper.Map<GroupDto>(result.Data)) : BadRequest(result.Error);
+        var result = await sender.Send(command);
+        return result.IsSuccess ? Ok(mapper.Map<GroupDto>(result.Data)) : BadRequest(result.Error);
     }
     
     [HttpPut]
@@ -58,8 +49,8 @@ public class GroupController : Controller
     {
         var command = new UpdateGroupCommand(request.Id, request.Name);
         
-        var result = await _sender.Send(command);
-        return result.IsSuccess ? Ok(_mapper.Map<GroupDto>(result.Data)) : BadRequest(result.Error);
+        var result = await sender.Send(command);
+        return result.IsSuccess ? Ok(mapper.Map<GroupDto>(result.Data)) : BadRequest(result.Error);
     }
     
     [HttpDelete("{id:guid}")]
@@ -67,7 +58,7 @@ public class GroupController : Controller
     {
         var command = new DeleteGroupCommand(id);
 
-        var result = await _sender.Send(command);
+        var result = await sender.Send(command);
         return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
 
     }

@@ -10,26 +10,18 @@ using SmartCharge.UnitOfWork;
 
 namespace SmartCharge.Handlers.Connector;
 
-public class GetConnectorHandler : IRequestHandler<GetConnectorByIdQuery, Result<ConnectorEntity>>
+public class GetConnectorHandler(
+    IUnitOfWork unitOfWork,
+    IConnectorRepository connectorRepository)
+    : IRequestHandler<GetConnectorByIdQuery, Result<ConnectorEntity>>
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IConnectorRepository _connectorRepository;
-    
-    public GetConnectorHandler(
-        IUnitOfWork unitOfWork,
-        IConnectorRepository connectorRepository)
-    {
-        _unitOfWork = unitOfWork;
-        _connectorRepository = connectorRepository;
-    }
-    
     public async Task<Result<ConnectorEntity>> Handle(GetConnectorByIdQuery query, CancellationToken cancellationToken)
     {
-        await _unitOfWork.BeginTransactionAsync();
+        await unitOfWork.BeginTransactionAsync();
 
         try
         {
-            var connector = await _connectorRepository.GetConnectorById(query.Id);
+            var connector = await connectorRepository.GetConnectorById(query.Id);
             if (connector is null)
             {
                 throw new ArgumentException($"A Connector with Id {query.Id} does not exist.");
@@ -37,18 +29,18 @@ public class GetConnectorHandler : IRequestHandler<GetConnectorByIdQuery, Result
                 
             connector.IsValidForChange();
             
-            await _unitOfWork.CommitAsync();
+            await unitOfWork.CommitAsync();
             
             return Result<ConnectorEntity>.Success(connector);
         }
         catch (ArgumentException ex)
         {
-            await _unitOfWork.RollbackAsync();
+            await unitOfWork.RollbackAsync();
             return Result<ConnectorEntity>.Failure(ex.Message);
         }
         catch (Exception ex)
         {
-            await _unitOfWork.RollbackAsync();
+            await unitOfWork.RollbackAsync();
             return Result<ConnectorEntity>.Failure(ex.Message);
         }
     }

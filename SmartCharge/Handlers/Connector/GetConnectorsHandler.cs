@@ -12,39 +12,31 @@ using SmartCharge.UnitOfWork;
 
 namespace SmartCharge.Handlers.Connector;
 
-public class GetConnectorsHandler : IRequestHandler<GetConnectorsQuery, Result<IEnumerable<ConnectorEntity>>>
+public class GetConnectorsHandler(
+    IUnitOfWork unitOfWork,
+    IConnectorRepository connectorRepository)
+    : IRequestHandler<GetConnectorsQuery, Result<IEnumerable<ConnectorEntity>>>
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IConnectorRepository _connectorRepository;
-    
-    public GetConnectorsHandler(
-        IUnitOfWork unitOfWork,
-        IConnectorRepository connectorRepository)
-    {
-        _unitOfWork = unitOfWork;
-        _connectorRepository = connectorRepository;
-    }
-    
     public async Task<Result<IEnumerable<ConnectorEntity>>> Handle(GetConnectorsQuery query, CancellationToken cancellationToken)
     {
-        await _unitOfWork.BeginTransactionAsync();
+        await unitOfWork.BeginTransactionAsync();
 
         try
         {
-            var connectors = await _connectorRepository.GetConnectors();
+            var connectors = await connectorRepository.GetConnectors();
             
-            await _unitOfWork.CommitAsync();
+            await unitOfWork.CommitAsync();
             
             return Result<IEnumerable<ConnectorEntity>>.Success(connectors);
         }
         catch (ArgumentException ex)
         {
-            await _unitOfWork.RollbackAsync();
+            await unitOfWork.RollbackAsync();
             return Result<IEnumerable<ConnectorEntity>>.Failure(ex.Message);
         }
         catch (Exception ex)
         {
-            await _unitOfWork.RollbackAsync();
+            await unitOfWork.RollbackAsync();
             return Result<IEnumerable<ConnectorEntity>>.Failure(ex.Message);
         }
     }

@@ -5,6 +5,4 @@ using SmartCharge.Domain.Response;
 
 namespace SmartCharge.Commands.Connector;
 
-public class GetConnectorsQuery : IRequest<Result<IEnumerable<ConnectorEntity>>>
-{
-}
+public class GetConnectorsQuery : IRequest<Result<IEnumerable<ConnectorEntity>>> {}

@@ -5,11 +5,7 @@ using SmartCharge.Domain.Response;
 
 namespace SmartCharge.Commands.Group;
 
-public class DeleteGroupCommand : IRequest<Result<GroupEntity>>
+public class DeleteGroupCommand(Guid id) : IRequest<Result<GroupEntity>>
 {
-    public Guid Id { get; set; }
-    public DeleteGroupCommand(Guid id)
-    {
-        Id = id;
-    }
+    public Guid Id { get; set; } = id;
 }

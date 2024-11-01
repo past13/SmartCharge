@@ -5,14 +5,8 @@ using SmartCharge.Domain.Response;
 
 namespace SmartCharge.Commands.Group;
 
-public class UpdateGroupCommand : IRequest<Result<GroupEntity>>
+public class UpdateGroupCommand(Guid id, string name) : IRequest<Result<GroupEntity>>
 {
-    public Guid Id { get; set; }
-    public string Name { get; set; }
-    
-    public UpdateGroupCommand(Guid id, string name)
-    {
-        Id = id;
-        Name = name;
-    }
+    public Guid Id { get; set; } = id;
+    public string Name { get; set; } = name;
 }

@@ -10,37 +10,26 @@ using SmartCharge.UnitOfWork;
 
 namespace SmartCharge.Handlers.ChargeStation;
 
-public class CreateChargeStationHandler : IRequestHandler<CreateChargeStationCommand, Result<ChargeStationEntity>>
+public class CreateChargeStationHandler(
+    IUnitOfWork unitOfWork,
+    IChargeStationRepository chargeStationRepository,
+    IGroupRepository groupRepository)
+    : IRequestHandler<CreateChargeStationCommand, Result<ChargeStationEntity>>
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IGroupRepository _groupRepository;
-    private readonly IChargeStationRepository _chargeStationRepository;
-    
-    public CreateChargeStationHandler(
-        IUnitOfWork unitOfWork,
-        IChargeStationRepository chargeStationRepository,
-        IGroupRepository groupRepository
-        )
-    {
-        _unitOfWork = unitOfWork;
-        _chargeStationRepository = chargeStationRepository;
-        _groupRepository = groupRepository;
-    }
-    
     public async Task<Result<ChargeStationEntity>> Handle(CreateChargeStationCommand command, CancellationToken cancellationToken)
     {
-        await _unitOfWork.BeginTransactionAsync();
+        await unitOfWork.BeginTransactionAsync();
 
         try
         {
-            var group = await _groupRepository.GetGroupById(command.GroupId);
+            var group = await groupRepository.GetGroupById(command.GroupId);
             if (group == null)
             {
                 throw new ArgumentException($"A Group with Id {command.GroupId} does not exists.");
             }
 
             var chargeStationName = command.Name.Trim();
-            var chargeStationNameExist = await _chargeStationRepository.IsNameExist(chargeStationName);
+            var chargeStationNameExist = await chargeStationRepository.IsNameExist(chargeStationName);
             if (chargeStationNameExist)
             {
                 throw new ArgumentException($"A ChargeStation with the name {chargeStationName} already exists.");
@@ -62,21 +51,21 @@ public class CreateChargeStationHandler : IRequestHandler<CreateChargeStationCom
             group.AddChargeStation(chargeStation);
             group.UpdateCapacity();
             
-            await _chargeStationRepository.AddChargeStation(chargeStation);
+            await chargeStationRepository.AddChargeStation(chargeStation);
 
-            await _unitOfWork.SaveChangesAsync();
-            await _unitOfWork.CommitAsync();
+            await unitOfWork.SaveChangesAsync();
+            await unitOfWork.CommitAsync();
             
             return Result<ChargeStationEntity>.Success(chargeStation);
         }
         catch (ArgumentException ex)
         {
-            await _unitOfWork.RollbackAsync();
+            await unitOfWork.RollbackAsync();
             return Result<ChargeStationEntity>.Failure(ex.Message);
         }
         catch (Exception ex)
         {
-            await _unitOfWork.RollbackAsync();
+            await unitOfWork.RollbackAsync();
             return Result<ChargeStationEntity>.Failure(ex.Message);
         }
     }

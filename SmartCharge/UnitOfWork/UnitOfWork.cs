@@ -12,19 +12,13 @@ public interface IUnitOfWork
     Task<int> SaveChangesAsync();
 }
 
-public class UnitOfWork : IUnitOfWork
+public class UnitOfWork(ApplicationDbContext context) : IUnitOfWork
 {
-    private readonly ApplicationDbContext _context;
     private IDbContextTransaction _transaction;
-
-    public UnitOfWork(ApplicationDbContext context)
-    {
-        _context = context;
-    }
 
     public async Task BeginTransactionAsync()
     {
-        _transaction = await _context.Database.BeginTransactionAsync();
+        _transaction = await context.Database.BeginTransactionAsync();
     }
 
     public async Task CommitAsync()
@@ -39,6 +33,6 @@ public class UnitOfWork : IUnitOfWork
 
     public async Task<int> SaveChangesAsync()
     {
-        return await _context.SaveChangesAsync();
+        return await context.SaveChangesAsync();
     }
 }

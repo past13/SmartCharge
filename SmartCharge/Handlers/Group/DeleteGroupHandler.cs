@@ -11,26 +11,18 @@ using SmartCharge.UnitOfWork;
 
 namespace SmartCharge.Handlers.Group;
 
-public class DeleteGroupHandler : IRequestHandler<DeleteGroupCommand, Result<GroupEntity>>
+public class DeleteGroupHandler(
+    IUnitOfWork unitOfWork,
+    IGroupRepository groupRepository)
+    : IRequestHandler<DeleteGroupCommand, Result<GroupEntity>>
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IGroupRepository _groupRepository;
-    public DeleteGroupHandler(
-        IUnitOfWork unitOfWork,
-        IGroupRepository groupRepository
-        )
-    {
-        _unitOfWork = unitOfWork;
-        _groupRepository = groupRepository;
-    }
-    
     public async Task<Result<GroupEntity>> Handle(DeleteGroupCommand command, CancellationToken cancellationToken)
     {
-        await _unitOfWork.BeginTransactionAsync();
+        await unitOfWork.BeginTransactionAsync();
 
         try
         {
-            var group = await _groupRepository.GetGroupById(command.Id);
+            var group = await groupRepository.GetGroupById(command.Id);
             if (group is null)
             {
                 throw new ArgumentException($"A Group with the Id {command.Id} does not exists.");
@@ -38,26 +30,26 @@ public class DeleteGroupHandler : IRequestHandler<DeleteGroupCommand, Result<Gro
 
             group.UpdateRowState(RowState.PendingDelete);
             
-            await _groupRepository.DeleteGroupById(command.Id);
+            await groupRepository.DeleteGroupById(command.Id);
 
-            await _unitOfWork.SaveChangesAsync();
-            await _unitOfWork.CommitAsync();
+            await unitOfWork.SaveChangesAsync();
+            await unitOfWork.CommitAsync();
             
             return Result<GroupEntity>.Success(null);
         }
         catch (ArgumentException ex)
         {
-            await _unitOfWork.RollbackAsync();
+            await unitOfWork.RollbackAsync();
             return Result<GroupEntity>.Failure(ex.Message);
         }
         catch (DbUpdateConcurrencyException)
         {
-            await _unitOfWork.RollbackAsync();
+            await unitOfWork.RollbackAsync();
             return Result<GroupEntity>.Failure("The Group was modified by another user since you loaded it. Please reload the data and try again.");
         }
         catch (Exception ex)
         {
-            await _unitOfWork.RollbackAsync();
+            await unitOfWork.RollbackAsync();
             return Result<GroupEntity>.Failure(ex.Message);
         }
     }

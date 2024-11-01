@@ -3,10 +3,8 @@ using SmartCharge.Domain.Entities;
 
 namespace SmartCharge.DataLayer;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
-    
     public DbSet<GroupEntity> Groups { get; set; }
     public DbSet<ChargeStationEntity> ChargeStations { get; set; }
     public DbSet<ConnectorEntity> Connectors { get; set; }

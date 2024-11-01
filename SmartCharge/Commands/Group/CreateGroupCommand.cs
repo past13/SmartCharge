@@ -5,14 +5,8 @@ using SmartCharge.Domain.Response;
 
 namespace SmartCharge.Commands.Group;
 
-public class CreateGroupCommand : IRequest<Result<GroupEntity>>
+public class CreateGroupCommand(string name, ChargeStationRequest chargeStation) : IRequest<Result<GroupEntity>>
 {
-    public string Name { get; set; }
-    public ChargeStationRequest ChargeStation { get; set; } 
-    
-    public CreateGroupCommand(string name, ChargeStationRequest chargeStation)
-    {
-        Name = name;
-        ChargeStation = chargeStation;
-    }
+    public string Name { get; set; } = name;
+    public ChargeStationRequest ChargeStation { get; set; } = chargeStation;
 }

@@ -5,12 +5,7 @@ using SmartCharge.Domain.Response;
 
 namespace SmartCharge.Commands.Connector;
 
-public class GetConnectorByIdQuery: IRequest<Result<ConnectorEntity>>
+public class GetConnectorByIdQuery(Guid id) : IRequest<Result<ConnectorEntity>>
 {
-    public Guid Id { get; }
-
-    public GetConnectorByIdQuery(Guid id)
-    {
-        Id = id;
-    }
+    public Guid Id { get; } = id;
 }

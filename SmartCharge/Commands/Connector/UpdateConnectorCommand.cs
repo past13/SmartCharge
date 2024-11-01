@@ -5,18 +5,11 @@ using SmartCharge.Domain.Response;
 
 namespace SmartCharge.Commands.Connector;
 
-public class UpdateConnectorCommand : IRequest<Result<ConnectorEntity>>
+public class UpdateConnectorCommand(Guid id, Guid chargeStationId, string name, int maxCurrentInAmps)
+    : IRequest<Result<ConnectorEntity>>
 {
-    public Guid Id { get; set; }
-    public Guid ChargeStationId  { get; set; }
-    public string Name { get; set; }
-    public int MaxCurrentInAmps { get; set; }
-    
-    public UpdateConnectorCommand(Guid id, Guid chargeStationId, string name, int maxCurrentInAmps)
-    {
-        Id = id;
-        ChargeStationId = chargeStationId;
-        Name = name;
-        MaxCurrentInAmps = maxCurrentInAmps;
-    }
+    public Guid Id { get; set; } = id;
+    public Guid ChargeStationId  { get; set; } = chargeStationId;
+    public string Name { get; set; } = name;
+    public int MaxCurrentInAmps { get; set; } = maxCurrentInAmps;
 }

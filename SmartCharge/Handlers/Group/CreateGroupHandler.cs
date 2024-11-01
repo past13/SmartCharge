@@ -10,30 +10,21 @@ using SmartCharge.UnitOfWork;
 
 namespace SmartCharge.Handlers.Group;
 
-public class CreateGroupHandler : IRequestHandler<CreateGroupCommand, Result<GroupEntity>>
+public class CreateGroupHandler(
+    IUnitOfWork unitOfWork,
+    IGroupRepository groupRepository,
+    IChargeStationRepository chargeStationRepository)
+    : IRequestHandler<CreateGroupCommand, Result<GroupEntity>>
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IGroupRepository _groupRepository;
-    private readonly IChargeStationRepository _chargeStationRepository;
-    public CreateGroupHandler(
-        IUnitOfWork unitOfWork,
-        IGroupRepository groupRepository,
-        IChargeStationRepository chargeStationRepository)
-    {
-        _unitOfWork = unitOfWork;
-        _groupRepository = groupRepository;
-        _chargeStationRepository = chargeStationRepository;
-    }
-    
     public async Task<Result<GroupEntity>> Handle(CreateGroupCommand command, CancellationToken cancellationToken)
     {
-        await _unitOfWork.BeginTransactionAsync();
+        await unitOfWork.BeginTransactionAsync();
         
         try
         {
             var groupName = command.Name.Trim();
 
-            var groupNameExist = await _groupRepository.IsNameExist(groupName);
+            var groupNameExist = await groupRepository.IsNameExist(groupName);
             if (groupNameExist)
             {
                 throw new ArgumentException($"A Group with the name {groupName} already exists.");
@@ -44,7 +35,7 @@ public class CreateGroupHandler : IRequestHandler<CreateGroupCommand, Result<Gro
             if (command.ChargeStation is not null)
             {
                 var chargeStationName = command.ChargeStation.Name.Trim();
-                var chargeStationExist = await _chargeStationRepository.IsNameExist(chargeStationName);
+                var chargeStationExist = await chargeStationRepository.IsNameExist(chargeStationName);
                 if (chargeStationExist)
                 {
                     throw new ArgumentException($"A ChargeStation with the name {chargeStationName} already exists.");
@@ -67,21 +58,21 @@ public class CreateGroupHandler : IRequestHandler<CreateGroupCommand, Result<Gro
                 group.UpdateCapacity();
             }
 
-            await _groupRepository.AddGroup(group);
+            await groupRepository.AddGroup(group);
 
-            await _unitOfWork.SaveChangesAsync();
-            await _unitOfWork.CommitAsync();
+            await unitOfWork.SaveChangesAsync();
+            await unitOfWork.CommitAsync();
 
             return Result<GroupEntity>.Success(group);
         }
         catch (ArgumentException ex)
         {
-            await _unitOfWork.RollbackAsync();
+            await unitOfWork.RollbackAsync();
             return Result<GroupEntity>.Failure(ex.Message);
         }
         catch (Exception ex)
         {
-            await _unitOfWork.RollbackAsync();
+            await unitOfWork.RollbackAsync();
             
             return Result<GroupEntity>.Failure(ex.Message);
         }

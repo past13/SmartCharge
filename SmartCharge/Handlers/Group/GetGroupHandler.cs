@@ -10,27 +10,18 @@ using SmartCharge.UnitOfWork;
 
 namespace SmartCharge.Handlers.Group;
 
-public class GetGroupHandler : IRequestHandler<GetGroupByIdQuery, Result<GroupEntity>>
+public class GetGroupHandler(
+    IUnitOfWork unitOfWork,
+    IGroupRepository groupRepository)
+    : IRequestHandler<GetGroupByIdQuery, Result<GroupEntity>>
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IGroupRepository _groupRepository;
-    
-    public GetGroupHandler(
-        IUnitOfWork unitOfWork,
-        IGroupRepository groupRepository
-        )
-    {
-        _unitOfWork = unitOfWork;
-        _groupRepository = groupRepository;
-    }
-    
     public async Task<Result<GroupEntity>> Handle(GetGroupByIdQuery query, CancellationToken cancellationToken)
     {
-        await _unitOfWork.BeginTransactionAsync();
+        await unitOfWork.BeginTransactionAsync();
 
         try
         {
-            var group = await _groupRepository.GetGroupById(query.Id);
+            var group = await groupRepository.GetGroupById(query.Id);
             if (group is null)
             {
                 throw new ArgumentException($"A Group with Id {query.Id} does not exist.");
@@ -38,18 +29,18 @@ public class GetGroupHandler : IRequestHandler<GetGroupByIdQuery, Result<GroupEn
                 
             group.IsValidForChange();
             
-            await _unitOfWork.CommitAsync();
+            await unitOfWork.CommitAsync();
             
             return Result<GroupEntity>.Success(group);
         }
         catch (ArgumentException ex)
         {
-            await _unitOfWork.RollbackAsync();
+            await unitOfWork.RollbackAsync();
             return Result<GroupEntity>.Failure(ex.Message);
         }
         catch (Exception ex)
         {
-            await _unitOfWork.RollbackAsync();
+            await unitOfWork.RollbackAsync();
             return Result<GroupEntity>.Failure(ex.Message);
         }
     }

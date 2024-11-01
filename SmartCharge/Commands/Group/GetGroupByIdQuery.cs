@@ -5,12 +5,7 @@ using SmartCharge.Domain.Response;
 
 namespace SmartCharge.Commands.Group;
 
-public class GetGroupByIdQuery : IRequest<Result<GroupEntity>>
+public class GetGroupByIdQuery(Guid id) : IRequest<Result<GroupEntity>>
 {
-    public Guid Id { get; }
-
-    public GetGroupByIdQuery(Guid id)
-    {
-        Id = id;
-    }
+    public Guid Id { get; } = id;
 }

@@ -5,12 +5,7 @@ using SmartCharge.Domain.Response;
 
 namespace SmartCharge.Commands.ChargeStation;
 
-public class GetChargeStationByIdQuery: IRequest<Result<ChargeStationEntity>>
+public class GetChargeStationByIdQuery(Guid id) : IRequest<Result<ChargeStationEntity>>
 {
-    public Guid Id { get; }
-
-    public GetChargeStationByIdQuery(Guid id)
-    {
-        Id = id;
-    }
+    public Guid Id { get; } = id;
 }

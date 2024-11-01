@@ -5,16 +5,9 @@ using SmartCharge.Domain.Response;
 
 namespace SmartCharge.Commands.ChargeStation;
 
-public class UpdateChargeStationCommand : IRequest<Result<ChargeStationEntity>>
+public class UpdateChargeStationCommand(Guid id, Guid groupId, string name) : IRequest<Result<ChargeStationEntity>>
 {
-    public Guid Id { get; set; }
-    public Guid GroupId  { get; set; }
-    public string Name { get; set; }
-    
-    public UpdateChargeStationCommand(Guid id, Guid groupId, string name)
-    {
-        Id = id;
-        GroupId = groupId;
-        Name = name;
-    }
+    public Guid Id { get; set; } = id;
+    public Guid GroupId  { get; set; } = groupId;
+    public string Name { get; set; } = name;
 }

@@ -7,17 +7,11 @@ using SmartCharge.Domain.Response;
 
 namespace SmartCharge.Commands.ChargeStation;
 
-public class CreateChargeStationCommand: IRequest<Result<ChargeStationEntity>>
+public class CreateChargeStationCommand(Guid groupId, string name, List<ConnectorRequest> connectors)
+    : IRequest<Result<ChargeStationEntity>>
 {
-    public Guid GroupId { get; set; }
-    public string Name { get; set; }
+    public Guid GroupId { get; set; } = groupId;
+    public string Name { get; set; } = name;
 
-    public List<ConnectorRequest> Connectors; 
-    
-    public CreateChargeStationCommand(Guid groupId, string name, List<ConnectorRequest> connectors)
-    {
-        GroupId = groupId;
-        Name = name;
-        Connectors = connectors;
-    }
+    public List<ConnectorRequest> Connectors = connectors;
 }

@@ -11,45 +11,33 @@ using SmartCharge.UnitOfWork;
 
 namespace SmartCharge.Handlers.Connector;
 
-public class CreateConnectorHandler : IRequestHandler<CreateConnectorCommand, Result<ConnectorEntity>>
+public class CreateConnectorHandler(
+    IUnitOfWork unitOfWork,
+    IGroupRepository groupRepository,
+    IChargeStationRepository chargeStationRepository,
+    IConnectorRepository connectorRepository)
+    : IRequestHandler<CreateConnectorCommand, Result<ConnectorEntity>>
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IGroupRepository _groupRepository;
-    private readonly IChargeStationRepository _chargeStationRepository;
-    private readonly IConnectorRepository _connectorRepository;
-
-    public CreateConnectorHandler(
-        IUnitOfWork unitOfWork,
-        IGroupRepository groupRepository,
-        IChargeStationRepository chargeStationRepository,
-        IConnectorRepository connectorRepository)
-    {
-        _unitOfWork = unitOfWork;
-        _groupRepository = groupRepository;
-        _chargeStationRepository = chargeStationRepository;
-        _connectorRepository = connectorRepository;
-    }
-    
     public async Task<Result<ConnectorEntity>> Handle(CreateConnectorCommand command, CancellationToken cancellationToken)
     {
-        await _unitOfWork.BeginTransactionAsync();
+        await unitOfWork.BeginTransactionAsync();
 
         try
         {
             var connectorName = command.Name.Trim();
-            var connectorNameExist = await _connectorRepository.IsNameExist(connectorName);
+            var connectorNameExist = await connectorRepository.IsNameExist(connectorName);
             if (connectorNameExist)
             {
                 throw new ArgumentException($"A Connector with the name {connectorName} already exists.");
             }
             
-            var isChargeStationExist = await _chargeStationRepository.IsChargeStationExist(command.ChargeStationId);
+            var isChargeStationExist = await chargeStationRepository.IsChargeStationExist(command.ChargeStationId);
             if (!isChargeStationExist)
             {
                 throw new ArgumentException($"A ChargeStation with Id {command.ChargeStationId} does not exists.");
             }
 
-            var group = await _groupRepository.GetGroupByChargeStationId(command.ChargeStationId);
+            var group = await groupRepository.GetGroupByChargeStationId(command.ChargeStationId);
             if (group is null)
             {
                 throw new ArgumentException($"A Group does not exists.");
@@ -62,21 +50,21 @@ public class CreateConnectorHandler : IRequestHandler<CreateConnectorCommand, Re
             
             group.UpdateCapacity();
 
-            await _connectorRepository.AddConnector(connector);
+            await connectorRepository.AddConnector(connector);
             
-            await _unitOfWork.SaveChangesAsync();
-            await _unitOfWork.CommitAsync();
+            await unitOfWork.SaveChangesAsync();
+            await unitOfWork.CommitAsync();
 
             return Result<ConnectorEntity>.Success(connector);
         }
         catch (ArgumentException ex)
         {
-            await _unitOfWork.RollbackAsync();
+            await unitOfWork.RollbackAsync();
             return Result<ConnectorEntity>.Failure(ex.Message);
         }
         catch (Exception ex)
         {
-            await _unitOfWork.RollbackAsync();
+            await unitOfWork.RollbackAsync();
             return Result<ConnectorEntity>.Failure(ex.Message);
         }
     }

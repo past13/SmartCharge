@@ -11,32 +11,20 @@ using SmartCharge.UnitOfWork;
 
 namespace SmartCharge.Handlers.Connector;
 
-public class DeleteConnectorHandler : IRequestHandler<DeleteConnectorCommand, Result<ConnectorEntity>>
+public class DeleteConnectorHandler(
+    IUnitOfWork unitOfWork,
+    IGroupRepository groupRepository,
+    IChargeStationRepository chargeStationRepository,
+    IConnectorRepository connectorRepository)
+    : IRequestHandler<DeleteConnectorCommand, Result<ConnectorEntity>>
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IGroupRepository _groupRepository;
-    
-    private readonly IChargeStationRepository _chargeStationRepository;
-    private readonly IConnectorRepository _connectorRepository;
-    public DeleteConnectorHandler(
-        IUnitOfWork unitOfWork,
-        IGroupRepository groupRepository,
-        IChargeStationRepository chargeStationRepository,
-        IConnectorRepository connectorRepository)
-    {
-        _unitOfWork = unitOfWork;
-        _groupRepository = groupRepository;
-        _chargeStationRepository = chargeStationRepository;
-        _connectorRepository = connectorRepository;
-    }
-    
     public async Task<Result<ConnectorEntity>> Handle(DeleteConnectorCommand command, CancellationToken cancellationToken)
     {
-        await _unitOfWork.BeginTransactionAsync();
+        await unitOfWork.BeginTransactionAsync();
 
         try
         {
-            var connector = await _connectorRepository.GetConnectorById(command.Id);
+            var connector = await connectorRepository.GetConnectorById(command.Id);
             if (connector is null)
             {
                 throw new ArgumentException($"Connector with Id {command.Id} does not exists.");
@@ -47,13 +35,13 @@ public class DeleteConnectorHandler : IRequestHandler<DeleteConnectorCommand, Re
                 throw new ArgumentException($"Connector with Id {command.Id} does not belong to ChargeStation.");
             }
             
-            var chargeStation = await _chargeStationRepository.GetChargeStationById(connector.ChargeStationId);
+            var chargeStation = await chargeStationRepository.GetChargeStationById(connector.ChargeStationId);
             if (chargeStation is null)
             {
                 throw new ArgumentException($"ChargeStation with Id {connector.ChargeStationId} does not exists.");
             }
             
-            var group = await _groupRepository.GetGroupById(chargeStation.GroupId);
+            var group = await groupRepository.GetGroupById(chargeStation.GroupId);
             if (group is null)
             {
                 throw new ArgumentException($"Group with Id {chargeStation.Id} does not exists.");
@@ -65,21 +53,21 @@ public class DeleteConnectorHandler : IRequestHandler<DeleteConnectorCommand, Re
             currentChargeStation.RemoveConnector(connector);
             group.UpdateCapacity();
         
-            await _connectorRepository.DeleteConnectorById(command.Id);
+            await connectorRepository.DeleteConnectorById(command.Id);
             
-            await _unitOfWork.SaveChangesAsync();
-            await _unitOfWork.CommitAsync();
+            await unitOfWork.SaveChangesAsync();
+            await unitOfWork.CommitAsync();
 
             return Result<ConnectorEntity>.Success(null);
         }
         catch (ArgumentException ex)
         {
-            await _unitOfWork.RollbackAsync();
+            await unitOfWork.RollbackAsync();
             return Result<ConnectorEntity>.Failure(ex.Message);
         }
         catch (Exception ex)
         {
-            await _unitOfWork.RollbackAsync();
+            await unitOfWork.RollbackAsync();
             return Result<ConnectorEntity>.Failure(ex.Message);
         }
     }
