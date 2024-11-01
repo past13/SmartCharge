@@ -43,9 +43,17 @@ public class ConnectorEntity : BaseEntity
         MaxCurrentInAmps = maxCurrentInAmps;
     }
     
-    public void UpdateStateDelete(RowState rowState)
+    public void UpdateRowState(RowState rowState)
     {
         RowState = rowState;
+    }
+    
+    public void IsValidForChange()
+    {
+        if (RowState == RowState.PendingDelete)
+        {
+            throw new ArgumentException($"A Connector with Id {Id} already deleting.");
+        }
     }
 
     public void UpdateConnectorNumber(int connectorNumber)

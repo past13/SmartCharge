@@ -45,7 +45,7 @@ public class UpdateConnectorHandlerTests : DatabaseDependentTestBase
         
         // Act
         var notExistId = Guid.NewGuid();
-        var command = new UpdateConnectorCommand(notExistId, connectorEntity.Id, groupEntity.Id, "Test Connector 2", 1);
+        var command = new UpdateConnectorCommand(notExistId, connectorEntity.Id, "Test Connector 2", 1);
         var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
@@ -61,14 +61,13 @@ public class UpdateConnectorHandlerTests : DatabaseDependentTestBase
         var connectorEntity = ConnectorEntity.Create("Test Connector 1", 1);
 
         chargeStationEntity.AddConnector(connectorEntity);
-
         groupEntity.AddChargeStation(chargeStationEntity);
         
         InMemoryDb.Groups.Add(groupEntity);
         await InMemoryDb.SaveChangesAsync();
         
         // Act
-        var command = new UpdateConnectorCommand(connectorEntity.Id, chargeStationEntity.Id, groupEntity.Id, "Updated Test Group", 1);
+        var command = new UpdateConnectorCommand(connectorEntity.Id, chargeStationEntity.Id, "Updated Test Group", 1);
         var result = await _handler.Handle(command, CancellationToken.None);
     
         // Assert
@@ -93,14 +92,13 @@ public class UpdateConnectorHandlerTests : DatabaseDependentTestBase
         var connectorEntity3 = ConnectorEntity.Create("Test Connector 3", 1);
 
         chargeStationEntity2.AddConnector(connectorEntity3);
-
         groupEntity2.AddChargeStation(chargeStationEntity2);
         
         InMemoryDb.Groups.AddRange(groupEntity1, groupEntity2);
         await InMemoryDb.SaveChangesAsync();
         
         // Act
-        var command = new UpdateConnectorCommand(connectorEntity2.Id, chargeStationEntity2.Id, groupEntity2.Id, "Updated Test Group", 1);
+        var command = new UpdateConnectorCommand(connectorEntity2.Id, chargeStationEntity2.Id, "Updated Test Group", 1);
         var result = await _handler.Handle(command, CancellationToken.None);
 
         var connectors2 = InMemoryDb.Groups
@@ -113,5 +111,59 @@ public class UpdateConnectorHandlerTests : DatabaseDependentTestBase
         Assert.True(result.IsSuccess);
         Assert.Equal(2, connectors2.Count);
         Assert.Contains(connectors2, c => c.Id == connectorEntity2.Id);
+    }
+    
+    [Fact]
+    public async Task Handle_ShouldReturnError_SwapChargeStationRequiredAtLeastOneConnector()
+    {
+        var groupEntity1 = GroupEntity.Create("Test Group 1");
+        var chargeStationEntity1 = ChargeStationEntity.Create("Test ChargeStation 1");
+        var connectorEntity1 = ConnectorEntity.Create("Test Connector 1", 1);
+        
+        chargeStationEntity1.AddConnector(connectorEntity1);
+        groupEntity1.AddChargeStation(chargeStationEntity1);
+        
+        var groupEntity2 = GroupEntity.Create("Test Group 2");
+        var chargeStationEntity2 = ChargeStationEntity.Create("Test ChargeStation 2");
+        var connectorEntity2 = ConnectorEntity.Create("Test Connector 2", 1);
+
+        chargeStationEntity2.AddConnector(connectorEntity2);
+        groupEntity2.AddChargeStation(chargeStationEntity2);
+        
+        InMemoryDb.Groups.AddRange(groupEntity1, groupEntity2);
+        await InMemoryDb.SaveChangesAsync();
+        
+        // Act
+        var command = new UpdateConnectorCommand(connectorEntity1.Id, chargeStationEntity2.Id, "Updated Test Group", 1);
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Contains($"A ChargeStation Id {chargeStationEntity1.Id} cannot have less than 1 connector.",
+            result.Error);
+    }
+    
+    [Fact]
+    public async Task Handle_ShouldReturnError_WhenConnectorRowSateDeleting()
+    {
+        var groupEntity = GroupEntity.Create("Test Group");
+        var chargeStationEntity = ChargeStationEntity.Create("Test ChargeStation 1");
+        var connectorEntity = ConnectorEntity.Create("Test Connector 1", 1);
+
+        chargeStationEntity.AddConnector(connectorEntity);
+        groupEntity.AddChargeStation(chargeStationEntity);
+        
+        connectorEntity.UpdateRowState(RowState.PendingDelete);
+        
+        InMemoryDb.Groups.Add(groupEntity);
+        await InMemoryDb.SaveChangesAsync();
+        
+        // Act
+        var command = new UpdateConnectorCommand(connectorEntity.Id, chargeStationEntity.Id, "Updated Test Group", 1);
+        var result = await _handler.Handle(command, CancellationToken.None);
+    
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Contains($"A Connector with Id {connectorEntity.Id} already deleting.", result.Error);
     }
 }

@@ -68,8 +68,8 @@ public class DeleteConnectorHandlerTests : DatabaseDependentTestBase
         await InMemoryDb.SaveChangesAsync();
         
         // Act
-        var exist = new DeleteConnectorCommand(chargeStationEntity.Id, connectorEntity.Id);
-        var result = await _handler.Handle(exist, CancellationToken.None);
+        var command = new DeleteConnectorCommand(chargeStationEntity.Id, connectorEntity.Id);
+        var result = await _handler.Handle(command, CancellationToken.None);
     
         // Assert
         Assert.False(result.IsSuccess);
@@ -94,8 +94,8 @@ public class DeleteConnectorHandlerTests : DatabaseDependentTestBase
         await InMemoryDb.SaveChangesAsync();
         
         // Act
-        var exist = new DeleteConnectorCommand(chargeStationEntity.Id, connectorEntity1.Id);
-        var result = await _handler.Handle(exist, CancellationToken.None);
+        var command = new DeleteConnectorCommand(chargeStationEntity.Id, connectorEntity1.Id);
+        var result = await _handler.Handle(command, CancellationToken.None);
     
         // Assert
         Assert.True(result.IsSuccess);

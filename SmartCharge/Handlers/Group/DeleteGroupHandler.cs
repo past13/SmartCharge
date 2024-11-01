@@ -36,7 +36,7 @@ public class DeleteGroupHandler : IRequestHandler<DeleteGroupCommand, Result<Gro
                 throw new ArgumentException($"A Group with the Id {command.Id} does not exists.");
             }
 
-            group.UpdateStateDelete(RowState.PendingDelete);
+            group.UpdateRowState(RowState.PendingDelete);
             
             await _groupRepository.DeleteGroupById(command.Id);
 

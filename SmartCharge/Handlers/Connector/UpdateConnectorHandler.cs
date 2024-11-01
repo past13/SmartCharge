@@ -70,6 +70,8 @@ public class UpdateConnectorHandler : IRequestHandler<UpdateConnectorCommand, Re
                 newChargeStation.GroupEntity.UpdateCapacity();
             }
             
+            connector.IsValidForChange();
+            
             connector.Update(connectorName, command.MaxCurrentInAmps);
             
             await _unitOfWork.SaveChangesAsync();

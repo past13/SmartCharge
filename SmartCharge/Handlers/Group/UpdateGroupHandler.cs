@@ -42,6 +42,8 @@ public class UpdateGroupHandler : IRequestHandler<UpdateGroupCommand, Result<Gro
                 throw new ArgumentException($"A Group does not exists.");
             }
 
+            group.IsValidForChange();
+
             group.Update(groupName);
 
             await _unitOfWork.SaveChangesAsync();

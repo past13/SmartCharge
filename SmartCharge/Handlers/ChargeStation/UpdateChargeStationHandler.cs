@@ -52,6 +52,8 @@ public class UpdateChargeStationHandler : IRequestHandler<UpdateChargeStationCom
             {
                 throw new ArgumentException($"A Group with Id {command.GroupId} does not exists.");
             }
+            
+            chargeStation.IsValidForChange();
 
             if (chargeStation.GroupId != newGroup.Id)
             {

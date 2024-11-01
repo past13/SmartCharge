@@ -44,13 +44,20 @@ public class GroupEntity : BaseEntity
         Name = name;
     }
     
-    public void UpdateStateDelete(RowState rowState)
+    public void UpdateRowState(RowState rowState)
     {
         RowState = rowState;
-        
         foreach (var chargeStation in _chargeStations)
         {
-            chargeStation.UpdateStateDelete(rowState);
+            chargeStation.UpdateRowState(rowState);
+        }
+    }
+    
+    public void IsValidForChange()
+    {
+        if (RowState == RowState.PendingDelete)
+        {
+            throw new ArgumentException($"A Group with Id {Id} already deleting.");
         }
     }
     

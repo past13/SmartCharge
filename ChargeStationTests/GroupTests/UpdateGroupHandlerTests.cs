@@ -33,15 +33,14 @@ public class UpdateGroupHandlerTests : DatabaseDependentTestBase
     [Fact]
     public async Task Handle_ShouldReturnError_WhenGroupNotExists()
     {
-        var command = new UpdateGroupCommand(Guid.NewGuid(), "Test Group 1");
-        var group = GroupEntity.Create(command.Name);
+        var group = GroupEntity.Create("Test Group 1");
 
         InMemoryDb.Groups.Add(group);
         await InMemoryDb.SaveChangesAsync();
         
         // Act
-        var notExist = new UpdateGroupCommand(Guid.NewGuid(), "Test Group 2");
-        var result = await _handler.Handle(notExist, CancellationToken.None);
+        var command = new UpdateGroupCommand(Guid.NewGuid(), "Test Group 2");
+        var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.False(result.IsSuccess);
@@ -59,11 +58,32 @@ public class UpdateGroupHandlerTests : DatabaseDependentTestBase
         var expectedName = "Test Group 2";
 
         // Act
-        var notExist = new UpdateGroupCommand(group.Id, expectedName);
-        var result = await _handler.Handle(notExist, CancellationToken.None);
+        var command = new UpdateGroupCommand(group.Id, expectedName);
+        var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.True(result.IsSuccess);
         Assert.Equal(expectedName, InMemoryDb.Groups.First().Name);
+    }
+    
+    [Fact]
+    public async Task Handle_ShouldReturnError_WhenGroupRowSateDeleting()
+    {
+        var group = GroupEntity.Create("Test Group 1");
+
+        InMemoryDb.Groups.Add(group);
+        await InMemoryDb.SaveChangesAsync();
+
+        var expectedName = "Test Group 2";
+
+        group.UpdateRowState(RowState.PendingDelete);
+        
+        // Act
+        var command = new UpdateGroupCommand(group.Id, expectedName);
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Contains($"A Group with Id {group.Id} already deleting.", result.Error);
     }
 }

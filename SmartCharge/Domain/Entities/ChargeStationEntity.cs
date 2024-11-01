@@ -41,13 +41,20 @@ public class ChargeStationEntity : BaseEntity
         Name = name;
     }
     
-    public void UpdateStateDelete(RowState rowState)
+    public void UpdateRowState(RowState rowState)
     {
         RowState = rowState;
-        
         foreach (var connector in _connectors)
         {
-            connector.UpdateStateDelete(rowState);
+            connector.UpdateRowState(rowState);
+        }
+    }
+    
+    public void IsValidForChange()
+    {
+        if (RowState == RowState.PendingDelete)
+        {
+            throw new ArgumentException($"A ChargeStation with Id {Id} already deleting.");
         }
     }
     

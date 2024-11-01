@@ -99,4 +99,30 @@ public class UpdateChargeStationHandlerTests : DatabaseDependentTestBase
         // Assert
         Assert.True(result.IsSuccess);
     }
+    
+    [Fact]
+    public async Task Handle_ShouldReturnError_WhenChargeStationRowSateDeleting()
+    {
+        var groupEntity = GroupEntity.Create("Test Group");
+        var chargeStationEntity = ChargeStationEntity.Create("Test ChargeStation");
+        var connectorEntity = ConnectorEntity.Create("Test Connector", 1);
+
+        chargeStationEntity.AddConnector(connectorEntity);
+        groupEntity.AddChargeStation(chargeStationEntity);
+
+        chargeStationEntity.UpdateRowState(RowState.PendingDelete);
+        
+        InMemoryDb.Groups.Add(groupEntity);
+        await InMemoryDb.SaveChangesAsync();
+
+        var expectedName = "Updated Test ChargeStation";
+        
+        // Act
+        var command = new UpdateChargeStationCommand(chargeStationEntity.Id, groupEntity.Id, expectedName);
+        var result = await _handler.Handle(command, CancellationToken.None);
+    
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Contains($"A ChargeStation with Id {chargeStationEntity.Id} already deleting.", result.Error);
+    }
 }

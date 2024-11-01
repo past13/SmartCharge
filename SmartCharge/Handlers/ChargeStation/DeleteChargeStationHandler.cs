@@ -44,7 +44,7 @@ public class DeleteChargeStationHandler : IRequestHandler<DeleteChargeStationCom
                 throw new ArgumentException($"A Group with Id {command.GroupId} does not exists.");
             }
 
-            chargeStation.UpdateStateDelete(RowState.PendingDelete);
+            chargeStation.UpdateRowState(RowState.PendingDelete);
             
             group.RemoveChargeStation(chargeStation);
             group.UpdateCapacity();
