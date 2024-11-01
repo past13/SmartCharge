@@ -70,6 +70,23 @@ public class ChargeStationEntity : BaseEntity
             throw new ArgumentException($"A connector with ID {connector.Id} already exists in this charge station.");
         }
 
+        _connectors.Add(connector);
+        UpdateConnectorNumbers();
+    }
+
+    public void RemoveConnector(ConnectorEntity connector)
+    {
+        if (_connectors.Count <= 1)
+        {
+            throw new ArgumentException($"A ChargeStation Id {connector.ChargeStationId} cannot have less than 1 connector.");
+        }
+
+        _connectors.Remove(connector);
+        UpdateConnectorNumbers();
+    }
+
+    private void UpdateConnectorNumbers()
+    {
         var occupiedNumbers = _connectors
             .Select(c => c.ConnectorNumber)
             .ToHashSet();
@@ -79,21 +96,13 @@ public class ChargeStationEntity : BaseEntity
         {
             throw new InvalidOperationException("No available connector numbers.");
         }
-        
-        connector.UpdateConnectorNumber(nextConnectorNumber);
-        _connectors.Add(connector);
-    }
 
-    public void RemoveConnector(ConnectorEntity connector)
-    {
-        if (_connectors.Count <= 1)
+        foreach (var connector in _connectors)
         {
-            throw new ArgumentException($"A ChargeStation Id {connector.ChargeStationId} cannot have less than 1 connector.");
+            connector.UpdateConnectorNumber(nextConnectorNumber);
         }
-        
-        _connectors.Remove(connector);
     }
-
+    
     public int GetTotalCurrentLoad()
     {
         return _connectors.Sum(c => c.MaxCurrentInAmps);

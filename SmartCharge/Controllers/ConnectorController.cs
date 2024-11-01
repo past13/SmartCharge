@@ -9,7 +9,7 @@ using SmartCharge.Repository;
 namespace SmartCharge.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 public class ConnectorController : Controller
 {
     private readonly ISender _sender;
