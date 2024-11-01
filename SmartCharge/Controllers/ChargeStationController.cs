@@ -39,25 +39,24 @@ public class ChargeStationController : Controller
         return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
     }
     
-    [HttpPost]
-    public async Task<IActionResult> AddChargeStation([FromBody]CreateChargeStationRequest request)
+    [HttpPost("group/{groupId:guid}")]
+    public async Task<IActionResult> AddChargeStation(Guid groupId, [FromBody]CreateChargeStationRequest request)
     {
-        var command = new CreateChargeStationCommand(request.GroupId, request.Name, request.Connectors);
+        var command = new CreateChargeStationCommand(groupId, request.Name, request.Connectors);
+        
+        var result = await _sender.Send(command);
+        return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
+    }
+    [HttpPut("{id:guid}/group/{groupId:guid}")]
+    public async Task<IActionResult> UpdateChargeStation(Guid groupId, Guid id, [FromBody]UpdateChargeStationRequest request)
+    {
+        var command = new UpdateChargeStationCommand(id, groupId, request.Name);
         
         var result = await _sender.Send(command);
         return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
     }
     
-    [HttpPut]
-    public async Task<IActionResult> UpdateChargeStation([FromBody]UpdateChargeStationRequest request)
-    {
-        var command = new UpdateChargeStationCommand(request.Id, request.GroupId, request.Name);
-        
-        var result = await _sender.Send(command);
-        return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
-    }
-    
-    [HttpDelete("{id:guid}/{groupId:guid}")]
+    [HttpDelete("{id:guid}/group/{groupId:guid}")]
     public async Task<IActionResult> DeleteChargeStation(Guid id, Guid groupId)
     {
         var command = new DeleteChargeStationCommand(id, groupId);

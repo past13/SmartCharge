@@ -39,26 +39,26 @@ public class ConnectorController : Controller
         return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
     }
     
-    [HttpPost]
-    public async Task<IActionResult> AddConnector([FromBody]CreateConnectorRequest request)
+    [HttpPut("chargestation/{chargeStationId:guid}")]
+    public async Task<IActionResult> AddConnector(Guid chargeStationId, [FromBody]CreateConnectorRequest request)
     {
-        var command = new CreateConnectorCommand(request.Name, request.CapacityInAmps, request.ChargeStationId);
+        var command = new CreateConnectorCommand(request.Name, request.CapacityInAmps, chargeStationId);
         
         var result = await _sender.Send(command);
         return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
     }
     
-    [HttpPut]
-    public async Task<IActionResult> UpdateConnector([FromBody]UpdateConnectorRequest request)
+    [HttpPut("{id:guid}/chargestation/{chargeStationId:guid}")]
+    public async Task<IActionResult> UpdateConnector(Guid id, Guid chargeStationId, [FromBody]UpdateConnectorRequest request)
     {
-        var command = new UpdateConnectorCommand(request.Id, request.ChargeStationId, request.Name, request.MaxCurrentInAmps);
+        var command = new UpdateConnectorCommand(id, chargeStationId, request.Name, request.MaxCurrentInAmps);
         
         var result = await _sender.Send(command);
         return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
 
     }
     
-    [HttpDelete("{chargeStationId:guid}/{id:guid}")]
+    [HttpDelete("{id:guid}/chargestation/{chargeStationId:guid}")]
     public async Task<IActionResult> DeleteConnectorById(Guid chargeStationId, Guid id)
     {
         var command = new DeleteConnectorCommand(chargeStationId, id);
