@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SmartCharge.Commands.ChargeStation;
+using SmartCharge.Domain.DTOs;
 using SmartCharge.Domain.Requests.ChargeStation;
-using SmartCharge.Repository;
 
 namespace SmartCharge.Controllers;
 
@@ -13,21 +15,21 @@ namespace SmartCharge.Controllers;
 public class ChargeStationController : Controller
 {
     private readonly ISender _sender;
-    private readonly IChargeStationRepository _chargeStationRepository;
+    private readonly IMapper _mapper;
     
-    public ChargeStationController(
-        ISender sender, 
-        IChargeStationRepository chargeStationRepository)
+    public ChargeStationController(ISender sender, IMapper mapper)
     {
         _sender = sender;
-        _chargeStationRepository = chargeStationRepository;
+        _mapper = mapper;
     }
     
     [HttpGet("all")]
-    public async Task<IActionResult> GetAllChargeStations()
+    public async Task<IActionResult> GetChargeStations()
     {
-        var chargeStation = await _chargeStationRepository.GetAllChargeStations();
-        return Ok(chargeStation);
+        var command = new GetChargeStationsQuery();
+        
+        var result = await _sender.Send(command);
+        return result.IsSuccess ? Ok(_mapper.Map<IEnumerable<ChargeStationDto>>(result.Data)) : BadRequest(result.Error);
     }
     
     [HttpGet("{id:guid}")]
@@ -36,7 +38,7 @@ public class ChargeStationController : Controller
         var command = new GetChargeStationByIdQuery(id);
         
         var result = await _sender.Send(command);
-        return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
+        return result.IsSuccess ? Ok(_mapper.Map<ChargeStationDto>(result.Data)) : BadRequest(result.Error);
     }
     
     [HttpPost("group/{groupId:guid}")]
@@ -45,7 +47,7 @@ public class ChargeStationController : Controller
         var command = new CreateChargeStationCommand(groupId, request.Name, request.Connectors);
         
         var result = await _sender.Send(command);
-        return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
+        return result.IsSuccess ? Ok(_mapper.Map<ChargeStationDto>(result.Data)) : BadRequest(result.Error);
     }
     [HttpPut("{id:guid}/group/{groupId:guid}")]
     public async Task<IActionResult> UpdateChargeStation(Guid groupId, Guid id, [FromBody]UpdateChargeStationRequest request)
@@ -53,7 +55,7 @@ public class ChargeStationController : Controller
         var command = new UpdateChargeStationCommand(id, groupId, request.Name);
         
         var result = await _sender.Send(command);
-        return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
+        return result.IsSuccess ? Ok(_mapper.Map<ChargeStationDto>(result.Data)) : BadRequest(result.Error);
     }
     
     [HttpDelete("{id:guid}/group/{groupId:guid}")]

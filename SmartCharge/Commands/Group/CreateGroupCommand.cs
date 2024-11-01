@@ -1,11 +1,11 @@
 using MediatR;
-using SmartCharge.Domain.DTOs;
+using SmartCharge.Domain.Entities;
 using SmartCharge.Domain.Requests.ChargeStation;
 using SmartCharge.Domain.Response;
 
 namespace SmartCharge.Commands.Group;
 
-public class CreateGroupCommand : IRequest<Result<GroupDto>>
+public class CreateGroupCommand : IRequest<Result<GroupEntity>>
 {
     public string Name { get; set; }
     public ChargeStationRequest ChargeStation { get; set; } 

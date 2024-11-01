@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using SmartCharge.DataLayer;
 using SmartCharge.Domain.DTOs;
 using SmartCharge.Domain.Entities;
+using GroupEntity = SmartCharge.Domain.Entities.GroupEntity;
 
 namespace SmartCharge.Repository;
 
@@ -17,22 +18,19 @@ public interface IGroupRepository
     Task<GroupEntity?> GetGroupById(Guid id);
     Task<GroupEntity?> GetGroupByChargeStationId(Guid chargeStationId);
     Task DeleteGroupById(Guid id);
-    Task<IEnumerable<GroupDto>> GetAllGroups();
+    Task<IEnumerable<GroupEntity>> GetGroups();
 }
 
 public class GroupRepository : IGroupRepository
 {
     private readonly ApplicationDbContext _context;
-    private readonly IMapper _mapper;
     private readonly IChargeStationRepository _chargeStationRepository;
     
     public GroupRepository(
         ApplicationDbContext context, 
-        IMapper mapper,
         IChargeStationRepository chargeStationRepository)
     {
         _context = context;
-        _mapper = mapper;
         _chargeStationRepository = chargeStationRepository;
     }
     
@@ -42,13 +40,13 @@ public class GroupRepository : IGroupRepository
             .AnyAsync(g => g.Name.ToLower() == name.ToLower() && (!id.HasValue || g.Id != id.Value));
     }
     
-    public async Task<IEnumerable<GroupDto>> GetAllGroups()
+    public async Task<IEnumerable<GroupEntity>> GetGroups()
     {
-        var groups = await _context.Groups
-            .Include(x => x.ChargeStations)
+        return await _context.Groups
+            .Include(g => g.ChargeStations)
+            .ThenInclude(cs => cs.Connectors)
+            .Where(g => g.RowState == RowState.Active)
             .ToListAsync();
-        
-        return _mapper.Map<IEnumerable<GroupDto>>(groups);
     }
     
     public async Task<GroupEntity> AddGroup(GroupEntity group)

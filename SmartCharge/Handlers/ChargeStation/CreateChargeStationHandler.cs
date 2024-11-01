@@ -1,10 +1,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
 using MediatR;
 using SmartCharge.Commands.ChargeStation;
-using SmartCharge.Domain.DTOs;
 using SmartCharge.Domain.Entities;
 using SmartCharge.Domain.Response;
 using SmartCharge.Repository;
@@ -12,26 +10,24 @@ using SmartCharge.UnitOfWork;
 
 namespace SmartCharge.Handlers.ChargeStation;
 
-public class CreateChargeStationHandler : IRequestHandler<CreateChargeStationCommand, Result<ChargeStationDto>>
+public class CreateChargeStationHandler : IRequestHandler<CreateChargeStationCommand, Result<ChargeStationEntity>>
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
     private readonly IGroupRepository _groupRepository;
     private readonly IChargeStationRepository _chargeStationRepository;
     
     public CreateChargeStationHandler(
         IUnitOfWork unitOfWork,
-        IMapper mapper,
         IChargeStationRepository chargeStationRepository,
-        IGroupRepository groupRepository)
+        IGroupRepository groupRepository
+        )
     {
         _unitOfWork = unitOfWork;
-        _mapper = mapper;
         _chargeStationRepository = chargeStationRepository;
         _groupRepository = groupRepository;
     }
     
-    public async Task<Result<ChargeStationDto>> Handle(CreateChargeStationCommand command, CancellationToken cancellationToken)
+    public async Task<Result<ChargeStationEntity>> Handle(CreateChargeStationCommand command, CancellationToken cancellationToken)
     {
         await _unitOfWork.BeginTransactionAsync();
 
@@ -71,17 +67,17 @@ public class CreateChargeStationHandler : IRequestHandler<CreateChargeStationCom
             await _unitOfWork.SaveChangesAsync();
             await _unitOfWork.CommitAsync();
             
-            return Result<ChargeStationDto>.Success(_mapper.Map<ChargeStationDto>(chargeStation));
+            return Result<ChargeStationEntity>.Success(chargeStation);
         }
         catch (ArgumentException ex)
         {
             await _unitOfWork.RollbackAsync();
-            return Result<ChargeStationDto>.Failure(ex.Message);
+            return Result<ChargeStationEntity>.Failure(ex.Message);
         }
         catch (Exception ex)
         {
             await _unitOfWork.RollbackAsync();
-            return Result<ChargeStationDto>.Failure(ex.Message);
+            return Result<ChargeStationEntity>.Failure(ex.Message);
         }
     }
 }

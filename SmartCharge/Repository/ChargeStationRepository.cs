@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using SmartCharge.DataLayer;
 using SmartCharge.Domain.DTOs;
@@ -17,22 +16,19 @@ public interface IChargeStationRepository
     Task AddChargeStation(ChargeStationEntity chargeStation);
     Task<ChargeStationEntity?> GetChargeStationById(Guid id);
     Task DeleteChargeStationById(Guid id);
-    Task<IEnumerable<ChargeStationDto>> GetAllChargeStations();
+    Task<IEnumerable<ChargeStationEntity>> GetChargeStations();
 }
 
 public class ChargeStationRepository : IChargeStationRepository
 {
     private readonly ApplicationDbContext _context;
-    private readonly IMapper _mapper;
     private readonly IConnectorRepository _connectorRepository;
 
     public ChargeStationRepository(
         ApplicationDbContext context, 
-        IMapper mapper,
         IConnectorRepository connectorRepository)
     {
         _context = context;
-        _mapper = mapper;
         _connectorRepository = connectorRepository;
     }
     
@@ -47,12 +43,11 @@ public class ChargeStationRepository : IChargeStationRepository
         return await _context.ChargeStations.AnyAsync(cs => cs.Id == id);
     }
     
-    public async Task<IEnumerable<ChargeStationDto>> GetAllChargeStations()
+    public async Task<IEnumerable<ChargeStationEntity>> GetChargeStations()
     {
-        var result = await _context.ChargeStations
+        return await _context.ChargeStations
+            .Include(cs => cs.Connectors)
             .ToListAsync();
-        
-        return _mapper.Map<IEnumerable<ChargeStationDto>>(result);
     }
     
     public async Task AddChargeStation(ChargeStationEntity chargeStation)

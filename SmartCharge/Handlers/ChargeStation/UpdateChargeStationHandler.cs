@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SmartCharge.Commands.ChargeStation;
@@ -13,27 +12,24 @@ using SmartCharge.UnitOfWork;
 
 namespace SmartCharge.Handlers.ChargeStation;
 
-public class UpdateChargeStationHandler : IRequestHandler<UpdateChargeStationCommand, Result<ChargeStationDto>>
+public class UpdateChargeStationHandler : IRequestHandler<UpdateChargeStationCommand, Result<ChargeStationEntity>>
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
     private readonly IGroupRepository _groupRepository;
     private readonly IChargeStationRepository _chargeStationRepository;
 
     public UpdateChargeStationHandler(
         IUnitOfWork unitOfWork,
-        IMapper mapper,
         IGroupRepository groupRepository,
         IChargeStationRepository chargeStationRepository
         )
     {
         _unitOfWork = unitOfWork;
-        _mapper = mapper;
         _groupRepository = groupRepository;
         _chargeStationRepository = chargeStationRepository;
     }
     
-    public async Task<Result<ChargeStationDto>> Handle(UpdateChargeStationCommand command, CancellationToken cancellationToken)
+    public async Task<Result<ChargeStationEntity>> Handle(UpdateChargeStationCommand command, CancellationToken cancellationToken)
     {
         await _unitOfWork.BeginTransactionAsync();
 
@@ -74,22 +70,22 @@ public class UpdateChargeStationHandler : IRequestHandler<UpdateChargeStationCom
             await _unitOfWork.SaveChangesAsync();
             await _unitOfWork.CommitAsync();
         
-            return Result<ChargeStationDto>.Success(_mapper.Map<ChargeStationDto>(chargeStation));
+            return Result<ChargeStationEntity>.Success(chargeStation);
         }
         catch (ArgumentException ex)
         {
             await _unitOfWork.RollbackAsync();
-            return Result<ChargeStationDto>.Failure(ex.Message);
+            return Result<ChargeStationEntity>.Failure(ex.Message);
         }
         catch (DbUpdateConcurrencyException)
         {
             await _unitOfWork.RollbackAsync();
-            return Result<ChargeStationDto>.Failure("The ChargeStation was modified by another user since you loaded it. Please reload the data and try again.");
+            return Result<ChargeStationEntity>.Failure("The ChargeStation was modified by another user since you loaded it. Please reload the data and try again.");
         }
         catch (Exception ex)
         {
             await _unitOfWork.RollbackAsync();
-            return Result<ChargeStationDto>.Failure(ex.Message);
+            return Result<ChargeStationEntity>.Failure(ex.Message);
         }
     }
 }

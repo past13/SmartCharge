@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using SmartCharge.DataLayer;
-using SmartCharge.Domain.DTOs;
 using SmartCharge.Domain.Entities;
 
 namespace SmartCharge.Repository;
@@ -16,8 +15,7 @@ public interface IConnectorRepository
     Task AddConnector(ConnectorEntity connectorEntity);
     Task<ConnectorEntity?> GetConnectorById(Guid id);
     Task DeleteConnectorById(Guid id);
-    Task<IEnumerable<ConnectorDto>> GetAllConnectors();
-    Task<IEnumerable<ConnectorEntity>> GetAllConnectorsById(List<Guid> ids);
+    Task<IEnumerable<ConnectorEntity>> GetConnectors();
 }
 
 public class ConnectorRepository : IConnectorRepository
@@ -25,12 +23,9 @@ public class ConnectorRepository : IConnectorRepository
     private readonly ApplicationDbContext _context;
     private readonly IMapper _mapper;
     
-    public ConnectorRepository(
-        ApplicationDbContext context, 
-        IMapper mapper)
+    public ConnectorRepository(ApplicationDbContext context)
     {
         _context = context;
-        _mapper = mapper;
     }
     
     public async Task<bool> IsNameExist(string name, Guid? id)
@@ -39,21 +34,9 @@ public class ConnectorRepository : IConnectorRepository
             .AnyAsync(g => g.Name.ToLower() == name.ToLower() && (!id.HasValue || g.Id != id.Value));
     }
     
-    public async Task<IEnumerable<ConnectorEntity>> GetAllConnectorsById(List<Guid> ids)
+    public async Task<IEnumerable<ConnectorEntity>> GetConnectors()
     {
-        var result = await _context.Connectors
-            .Where(c => ids.Contains(c.Id))
-            .ToListAsync();
-        
-        return result;
-    }
-    
-    public async Task<IEnumerable<ConnectorDto>> GetAllConnectors()
-    {
-        var result = await _context.Connectors
-            .ToListAsync();
-        
-        return _mapper.Map<IEnumerable<ConnectorDto>>(result);
+        return await _context.Connectors.ToListAsync();
     }
     
     public async Task AddConnector(ConnectorEntity connector)

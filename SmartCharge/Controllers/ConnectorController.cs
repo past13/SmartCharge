@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SmartCharge.Commands.Connector;
+using SmartCharge.Domain.DTOs;
 using SmartCharge.Domain.Requests.Connector;
-using SmartCharge.Repository;
 
 namespace SmartCharge.Controllers;
 
@@ -13,30 +15,30 @@ namespace SmartCharge.Controllers;
 public class ConnectorController : Controller
 {
     private readonly ISender _sender;
-    private readonly IConnectorRepository _connectorRepository;
-    
-    public ConnectorController(
-        ISender sender, 
-        IConnectorRepository connectorRepository)
+    private readonly IMapper _mapper;
+
+    public ConnectorController(ISender sender, IMapper mapper)
     {
         _sender = sender;
-        _connectorRepository = connectorRepository;
+        _mapper = mapper;
     }
     
     [HttpGet("all")]
-    public async Task<IActionResult> GetAllConnectors()
+    public async Task<IActionResult> GetConnectors()
     {
-        var connectors = await _connectorRepository.GetAllConnectors();
-        return Ok(connectors);
+        var command = new GetConnectorsQuery();
+        
+        var result = await _sender.Send(command);
+        return result.IsSuccess ? Ok(_mapper.Map<IEnumerable<ConnectorDto>>(result.Data)) : BadRequest(result.Error);
     }
     
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> AddConnector(Guid id)
+    public async Task<IActionResult> GetConnector(Guid id)
     {
         var command = new GetConnectorByIdQuery(id);
         
         var result = await _sender.Send(command);
-        return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
+        return result.IsSuccess ? Ok(_mapper.Map<ConnectorDto>(result.Data)) : BadRequest(result.Error);
     }
     
     [HttpPut("chargestation/{chargeStationId:guid}")]
@@ -45,7 +47,7 @@ public class ConnectorController : Controller
         var command = new CreateConnectorCommand(request.Name, request.CapacityInAmps, chargeStationId);
         
         var result = await _sender.Send(command);
-        return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
+        return result.IsSuccess ? Ok(_mapper.Map<ConnectorDto>(result.Data)) : BadRequest(result.Error);
     }
     
     [HttpPut("{id:guid}/chargestation/{chargeStationId:guid}")]
@@ -54,7 +56,7 @@ public class ConnectorController : Controller
         var command = new UpdateConnectorCommand(id, chargeStationId, request.Name, request.MaxCurrentInAmps);
         
         var result = await _sender.Send(command);
-        return result.IsSuccess ? Ok(result) : BadRequest(result.Error);
+        return result.IsSuccess ? Ok(_mapper.Map<ConnectorDto>(result.Data)) : BadRequest(result.Error);
 
     }
     

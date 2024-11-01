@@ -1,11 +1,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SmartCharge.Commands.Connector;
-using SmartCharge.Domain.DTOs;
 using SmartCharge.Domain.Entities;
 using SmartCharge.Domain.Response;
 using SmartCharge.Repository;
@@ -13,29 +11,26 @@ using SmartCharge.UnitOfWork;
 
 namespace SmartCharge.Handlers.Connector;
 
-public class UpdateConnectorHandler : IRequestHandler<UpdateConnectorCommand, Result<ConnectorDto>>
+public class UpdateConnectorHandler : IRequestHandler<UpdateConnectorCommand, Result<ConnectorEntity>>
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
     private readonly IGroupRepository _groupRepository;
     private readonly IChargeStationRepository _chargeStationRepository;
     private readonly IConnectorRepository _connectorRepository;
 
     public UpdateConnectorHandler(
         IUnitOfWork unitOfWork,
-        IMapper mapper,
         IGroupRepository groupRepository,
         IChargeStationRepository chargeStationRepository,
         IConnectorRepository connectorRepository)
     {
         _unitOfWork = unitOfWork;
-        _mapper = mapper;
         _groupRepository = groupRepository;
         _chargeStationRepository = chargeStationRepository;
         _connectorRepository = connectorRepository;
     }
     
-    public async Task<Result<ConnectorDto>> Handle(UpdateConnectorCommand command, CancellationToken cancellationToken)
+    public async Task<Result<ConnectorEntity>> Handle(UpdateConnectorCommand command, CancellationToken cancellationToken)
     {
         await _unitOfWork.BeginTransactionAsync();
 
@@ -82,22 +77,22 @@ public class UpdateConnectorHandler : IRequestHandler<UpdateConnectorCommand, Re
             await _unitOfWork.SaveChangesAsync();
             await _unitOfWork.CommitAsync();
             
-            return Result<ConnectorDto>.Success(_mapper.Map<ConnectorDto>(connector));
+            return Result<ConnectorEntity>.Success(connector);
         }
         catch (ArgumentException ex)
         {
             await _unitOfWork.RollbackAsync();
-            return Result<ConnectorDto>.Failure(ex.Message);
+            return Result<ConnectorEntity>.Failure(ex.Message);
         }
         catch (DbUpdateConcurrencyException)
         {
             await _unitOfWork.RollbackAsync();
-            return Result<ConnectorDto>.Failure("The Connector was modified by another user since you loaded it. Please reload the data and try again.");
+            return Result<ConnectorEntity>.Failure("The Connector was modified by another user since you loaded it. Please reload the data and try again.");
         }
         catch (Exception ex)
         {
             await _unitOfWork.RollbackAsync();
-            return Result<ConnectorDto>.Failure(ex.Message);
+            return Result<ConnectorEntity>.Failure(ex.Message);
         }
     }
 }

@@ -1,5 +1,3 @@
-using AutoMapper;
-using Moq;
 using SmartCharge.Commands.Group;
 using SmartCharge.Domain.Entities;
 using SmartCharge.Domain.Requests.ChargeStation;
@@ -14,22 +12,20 @@ public class CreateGroupHandlerTests : DatabaseDependentTestBase
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly GroupRepository _groupRepository;
-    private readonly Mock<IMapper> _mapper;
     private readonly IChargeStationRepository _chargeStationRepository;
     private readonly IConnectorRepository _connectorRepository;
     private readonly CreateGroupHandler _handler;
     
     public CreateGroupHandlerTests()
     {
-        _mapper = new Mock<IMapper>();
         _unitOfWork = new UnitOfWork(InMemoryDb);
         
-        _connectorRepository = new ConnectorRepository(InMemoryDb, _mapper.Object);
-        _chargeStationRepository = new ChargeStationRepository(InMemoryDb, _mapper.Object, _connectorRepository);
+        _connectorRepository = new ConnectorRepository(InMemoryDb);
+        _chargeStationRepository = new ChargeStationRepository(InMemoryDb, _connectorRepository);
         
-        _groupRepository = new GroupRepository(InMemoryDb, _mapper.Object, _chargeStationRepository);
+        _groupRepository = new GroupRepository(InMemoryDb, _chargeStationRepository);
         
-        _handler = new CreateGroupHandler(_unitOfWork, _mapper.Object, _groupRepository, _chargeStationRepository);
+        _handler = new CreateGroupHandler(_unitOfWork, _groupRepository, _chargeStationRepository);
     }
     
     [Fact]

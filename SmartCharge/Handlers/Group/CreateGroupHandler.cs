@@ -1,10 +1,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
 using MediatR;
 using SmartCharge.Commands.Group;
-using SmartCharge.Domain.DTOs;
 using SmartCharge.Domain.Entities;
 using SmartCharge.Domain.Response;
 using SmartCharge.Repository;
@@ -12,26 +10,22 @@ using SmartCharge.UnitOfWork;
 
 namespace SmartCharge.Handlers.Group;
 
-public class CreateGroupHandler : IRequestHandler<CreateGroupCommand, Result<GroupDto>>
+public class CreateGroupHandler : IRequestHandler<CreateGroupCommand, Result<GroupEntity>>
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
-    
     private readonly IGroupRepository _groupRepository;
     private readonly IChargeStationRepository _chargeStationRepository;
     public CreateGroupHandler(
         IUnitOfWork unitOfWork,
-        IMapper mapper,
         IGroupRepository groupRepository,
         IChargeStationRepository chargeStationRepository)
     {
         _unitOfWork = unitOfWork;
-        _mapper = mapper;
         _groupRepository = groupRepository;
         _chargeStationRepository = chargeStationRepository;
     }
     
-    public async Task<Result<GroupDto>> Handle(CreateGroupCommand command, CancellationToken cancellationToken)
+    public async Task<Result<GroupEntity>> Handle(CreateGroupCommand command, CancellationToken cancellationToken)
     {
         await _unitOfWork.BeginTransactionAsync();
         
@@ -78,18 +72,18 @@ public class CreateGroupHandler : IRequestHandler<CreateGroupCommand, Result<Gro
             await _unitOfWork.SaveChangesAsync();
             await _unitOfWork.CommitAsync();
 
-            return Result<GroupDto>.Success(_mapper.Map<GroupDto>(group));
+            return Result<GroupEntity>.Success(group);
         }
         catch (ArgumentException ex)
         {
             await _unitOfWork.RollbackAsync();
-            return Result<GroupDto>.Failure(ex.Message);
+            return Result<GroupEntity>.Failure(ex.Message);
         }
         catch (Exception ex)
         {
             await _unitOfWork.RollbackAsync();
             
-            return Result<GroupDto>.Failure(ex.Message);
+            return Result<GroupEntity>.Failure(ex.Message);
         }
     }
 }

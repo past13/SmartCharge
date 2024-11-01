@@ -1,33 +1,30 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SmartCharge.Commands.Group;
 using SmartCharge.Domain.DTOs;
+using SmartCharge.Domain.Entities;
 using SmartCharge.Domain.Response;
 using SmartCharge.Repository;
 using SmartCharge.UnitOfWork;
 
 namespace SmartCharge.Handlers.Group;
 
-public class UpdateGroupHandler : IRequestHandler<UpdateGroupCommand, Result<GroupDto>>
+public class UpdateGroupHandler : IRequestHandler<UpdateGroupCommand, Result<GroupEntity>>
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
     private readonly IGroupRepository _groupRepository;
     public UpdateGroupHandler(
         IUnitOfWork unitOfWork,
-        IMapper mapper,
         IGroupRepository groupRepository)
     {
         _unitOfWork = unitOfWork;
-        _mapper = mapper;
         _groupRepository = groupRepository;
     }
     
-    public async Task<Result<GroupDto>> Handle(UpdateGroupCommand command, CancellationToken cancellationToken)
+    public async Task<Result<GroupEntity>> Handle(UpdateGroupCommand command, CancellationToken cancellationToken)
     {
         await _unitOfWork.BeginTransactionAsync();
         
@@ -53,23 +50,23 @@ public class UpdateGroupHandler : IRequestHandler<UpdateGroupCommand, Result<Gro
             await _unitOfWork.SaveChangesAsync();
             await _unitOfWork.CommitAsync();
         
-            return Result<GroupDto>.Success(_mapper.Map<GroupDto>(group));
+            return Result<GroupEntity>.Success(group);
         }
         catch (ArgumentException ex)
         {
             await _unitOfWork.RollbackAsync();
-            return Result<GroupDto>.Failure(ex.Message);
+            return Result<GroupEntity>.Failure(ex.Message);
         }
         catch (DbUpdateConcurrencyException)
         {
             await _unitOfWork.RollbackAsync();
-            return Result<GroupDto>.Failure("The Group was modified by another user since you loaded it. Please reload the data and try again.");
+            return Result<GroupEntity>.Failure("The Group was modified by another user since you loaded it. Please reload the data and try again.");
         }
         catch (Exception ex)
         {
             await _unitOfWork.RollbackAsync();
             
-            return Result<GroupDto>.Failure(ex.Message);
+            return Result<GroupEntity>.Failure(ex.Message);
         }
     }
 }

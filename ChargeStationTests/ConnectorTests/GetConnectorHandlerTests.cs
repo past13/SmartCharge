@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using Moq;
-using SmartCharge.Commands.Connector;
+﻿using SmartCharge.Commands.Connector;
 using SmartCharge.Domain.Entities;
 using SmartCharge.Handlers.Connector;
 using SmartCharge.Repository;
@@ -11,7 +9,6 @@ namespace ChargeStationTests.ConnectorTests;
 public class GetConnectorHandlerTests : DatabaseDependentTestBase
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly Mock<IMapper> _mapper;
     private readonly IConnectorRepository _connectorRepository;
 
     private readonly GetConnectorHandler _handler;
@@ -19,10 +16,9 @@ public class GetConnectorHandlerTests : DatabaseDependentTestBase
     public GetConnectorHandlerTests()
     {
         _unitOfWork = new UnitOfWork(InMemoryDb);
-        _mapper = new Mock<IMapper>();
-        _connectorRepository = new ConnectorRepository(InMemoryDb, _mapper.Object);
+        _connectorRepository = new ConnectorRepository(InMemoryDb);
         
-        _handler = new GetConnectorHandler(_unitOfWork, _connectorRepository, _mapper.Object);
+        _handler = new GetConnectorHandler(_unitOfWork, _connectorRepository);
     }
 
     [Fact]

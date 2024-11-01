@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
@@ -10,12 +11,12 @@ using SmartCharge.UnitOfWork;
 
 namespace SmartCharge.Handlers.ChargeStation;
 
-public class GetChargeStationHandler : IRequestHandler<GetChargeStationByIdQuery, Result<ChargeStationEntity>>
+public class GetChargeStationsHandler : IRequestHandler<GetChargeStationsQuery, Result<IEnumerable<ChargeStationEntity>>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IChargeStationRepository _chargeStationRepository;
     
-    public GetChargeStationHandler(
+    public GetChargeStationsHandler(
         IUnitOfWork unitOfWork,
         IChargeStationRepository chargeStationRepository)
     {
@@ -23,33 +24,27 @@ public class GetChargeStationHandler : IRequestHandler<GetChargeStationByIdQuery
         _chargeStationRepository = chargeStationRepository;
     }
     
-    public async Task<Result<ChargeStationEntity>> Handle(GetChargeStationByIdQuery query, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<ChargeStationEntity>>> Handle(GetChargeStationsQuery query, CancellationToken cancellationToken)
     {
         await _unitOfWork.BeginTransactionAsync();
 
         try
         {
-            var chargeStation = await _chargeStationRepository.GetChargeStationById(query.Id);
-            if (chargeStation is null)
-            {
-                throw new ArgumentException($"A ChargeStation with Id {query.Id} does not exist.");
-            }
-                
-            chargeStation.IsValidForChange();
+            var chargeStations = await _chargeStationRepository.GetChargeStations();
             
             await _unitOfWork.CommitAsync();
             
-            return Result<ChargeStationEntity>.Success(chargeStation);
+            return Result<IEnumerable<ChargeStationEntity>>.Success(chargeStations);
         }
         catch (ArgumentException ex)
         {
             await _unitOfWork.RollbackAsync();
-            return Result<ChargeStationEntity>.Failure(ex.Message);
+            return Result<IEnumerable<ChargeStationEntity>>.Failure(ex.Message);
         }
         catch (Exception ex)
         {
             await _unitOfWork.RollbackAsync();
-            return Result<ChargeStationEntity>.Failure(ex.Message);
+            return Result<IEnumerable<ChargeStationEntity>>.Failure(ex.Message);
         }
     }
 }

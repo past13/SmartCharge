@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
@@ -10,12 +11,12 @@ using SmartCharge.UnitOfWork;
 
 namespace SmartCharge.Handlers.Group;
 
-public class GetGroupHandler : IRequestHandler<GetGroupByIdQuery, Result<GroupEntity>>
+public class GetGroupsHandler : IRequestHandler<GetGroupsQuery, Result<IEnumerable<GroupEntity>>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IGroupRepository _groupRepository;
     
-    public GetGroupHandler(
+    public GetGroupsHandler(
         IUnitOfWork unitOfWork,
         IGroupRepository groupRepository
         )
@@ -24,33 +25,27 @@ public class GetGroupHandler : IRequestHandler<GetGroupByIdQuery, Result<GroupEn
         _groupRepository = groupRepository;
     }
     
-    public async Task<Result<GroupEntity>> Handle(GetGroupByIdQuery query, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<GroupEntity>>> Handle(GetGroupsQuery query, CancellationToken cancellationToken)
     {
         await _unitOfWork.BeginTransactionAsync();
 
         try
         {
-            var group = await _groupRepository.GetGroupById(query.Id);
-            if (group is null)
-            {
-                throw new ArgumentException($"A Group with Id {query.Id} does not exist.");
-            }
-                
-            group.IsValidForChange();
+            var groups = await _groupRepository.GetGroups();
             
             await _unitOfWork.CommitAsync();
             
-            return Result<GroupEntity>.Success(group);
+            return Result<IEnumerable<GroupEntity>>.Success(groups);
         }
         catch (ArgumentException ex)
         {
             await _unitOfWork.RollbackAsync();
-            return Result<GroupEntity>.Failure(ex.Message);
+            return Result<IEnumerable<GroupEntity>>.Failure(ex.Message);
         }
         catch (Exception ex)
         {
             await _unitOfWork.RollbackAsync();
-            return Result<GroupEntity>.Failure(ex.Message);
+            return Result<IEnumerable<GroupEntity>>.Failure(ex.Message);
         }
     }
 }

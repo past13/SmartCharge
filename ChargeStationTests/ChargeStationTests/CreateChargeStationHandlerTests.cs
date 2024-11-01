@@ -1,5 +1,3 @@
-using AutoMapper;
-using Moq;
 using SmartCharge.Commands.ChargeStation;
 using SmartCharge.Domain.Entities;
 using SmartCharge.Domain.Requests.Connector;
@@ -12,7 +10,6 @@ namespace ChargeStationTests.ChargeStationTests;
 public class CreateChargeStationHandlerTests : DatabaseDependentTestBase
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly Mock<IMapper> _mapper;
     private readonly GroupRepository _groupRepository;
     private readonly IChargeStationRepository _chargeStationRepository;
     private readonly IConnectorRepository _connectorRepository;
@@ -22,13 +19,12 @@ public class CreateChargeStationHandlerTests : DatabaseDependentTestBase
     public CreateChargeStationHandlerTests()
     {
         _unitOfWork = new UnitOfWork(InMemoryDb);
-        _mapper = new Mock<IMapper>();
-        _connectorRepository = new ConnectorRepository(InMemoryDb, _mapper.Object);
-        _chargeStationRepository = new ChargeStationRepository(InMemoryDb, _mapper.Object, _connectorRepository);
+        _connectorRepository = new ConnectorRepository(InMemoryDb);
+        _chargeStationRepository = new ChargeStationRepository(InMemoryDb, _connectorRepository);
         
-        _groupRepository = new GroupRepository(InMemoryDb, _mapper.Object, _chargeStationRepository);
+        _groupRepository = new GroupRepository(InMemoryDb, _chargeStationRepository);
         
-        _handler = new CreateChargeStationHandler(_unitOfWork, _mapper.Object, _chargeStationRepository, _groupRepository);
+        _handler = new CreateChargeStationHandler(_unitOfWork, _chargeStationRepository, _groupRepository);
     }
     
     [Fact]

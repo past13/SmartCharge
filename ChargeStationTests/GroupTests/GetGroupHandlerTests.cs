@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using Moq;
-using SmartCharge.Commands.Group;
+﻿using SmartCharge.Commands.Group;
 using SmartCharge.Domain.Entities;
 using SmartCharge.Handlers.Group;
 using SmartCharge.Repository;
@@ -11,7 +9,6 @@ namespace ChargeStationTests.GroupTests;
 public class GetGroupHandlerTests : DatabaseDependentTestBase
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly Mock<IMapper> _mapper;
     private readonly GroupRepository _groupRepository;
     private readonly IChargeStationRepository _chargeStationRepository;
     private readonly IConnectorRepository _connectorRepository;
@@ -20,12 +17,11 @@ public class GetGroupHandlerTests : DatabaseDependentTestBase
     public GetGroupHandlerTests()
     {
         _unitOfWork = new UnitOfWork(InMemoryDb);
-        _mapper = new Mock<IMapper>();
-        _connectorRepository = new ConnectorRepository(InMemoryDb, _mapper.Object);
-        _chargeStationRepository = new ChargeStationRepository(InMemoryDb, _mapper.Object, _connectorRepository);
-        _groupRepository = new GroupRepository(InMemoryDb, _mapper.Object, _chargeStationRepository);
+        _connectorRepository = new ConnectorRepository(InMemoryDb);
+        _chargeStationRepository = new ChargeStationRepository(InMemoryDb, _connectorRepository);
+        _groupRepository = new GroupRepository(InMemoryDb, _chargeStationRepository);
         
-        _handler = new GetGroupHandler(_unitOfWork, _groupRepository, _mapper.Object);
+        _handler = new GetGroupHandler(_unitOfWork, _groupRepository);
     }
 
     [Fact]

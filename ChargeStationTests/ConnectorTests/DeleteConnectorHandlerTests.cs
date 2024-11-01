@@ -1,5 +1,3 @@
-using AutoMapper;
-using Moq;
 using SmartCharge.Commands.Connector;
 using SmartCharge.Domain.Entities;
 using SmartCharge.Handlers.Connector;
@@ -11,7 +9,6 @@ namespace ChargeStationTests.ConnectorTests;
 public class DeleteConnectorHandlerTests : DatabaseDependentTestBase
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly Mock<IMapper> _mapper;
     private readonly IGroupRepository _groupRepository;
     
     private readonly IChargeStationRepository _chargeStationRepository;
@@ -22,10 +19,9 @@ public class DeleteConnectorHandlerTests : DatabaseDependentTestBase
     public DeleteConnectorHandlerTests()
     {
         _unitOfWork = new UnitOfWork(InMemoryDb);
-        _mapper = new Mock<IMapper>();
-        _connectorRepository = new ConnectorRepository(InMemoryDb, _mapper.Object);
-        _chargeStationRepository = new ChargeStationRepository(InMemoryDb, _mapper.Object, _connectorRepository);
-        _groupRepository = new GroupRepository(InMemoryDb, _mapper.Object, _chargeStationRepository);
+        _connectorRepository = new ConnectorRepository(InMemoryDb);
+        _chargeStationRepository = new ChargeStationRepository(InMemoryDb, _connectorRepository);
+        _groupRepository = new GroupRepository(InMemoryDb, _chargeStationRepository);
         
         _handler = new DeleteConnectorHandler(_unitOfWork, _groupRepository, _chargeStationRepository, _connectorRepository);
     }

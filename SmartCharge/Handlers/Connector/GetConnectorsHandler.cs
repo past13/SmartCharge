@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using SmartCharge.Commands.Connector;
+using SmartCharge.Domain.DTOs;
 using SmartCharge.Domain.Entities;
 using SmartCharge.Domain.Response;
 using SmartCharge.Repository;
@@ -10,12 +12,12 @@ using SmartCharge.UnitOfWork;
 
 namespace SmartCharge.Handlers.Connector;
 
-public class GetConnectorHandler : IRequestHandler<GetConnectorByIdQuery, Result<ConnectorEntity>>
+public class GetConnectorsHandler : IRequestHandler<GetConnectorsQuery, Result<IEnumerable<ConnectorEntity>>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IConnectorRepository _connectorRepository;
     
-    public GetConnectorHandler(
+    public GetConnectorsHandler(
         IUnitOfWork unitOfWork,
         IConnectorRepository connectorRepository)
     {
@@ -23,33 +25,27 @@ public class GetConnectorHandler : IRequestHandler<GetConnectorByIdQuery, Result
         _connectorRepository = connectorRepository;
     }
     
-    public async Task<Result<ConnectorEntity>> Handle(GetConnectorByIdQuery query, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<ConnectorEntity>>> Handle(GetConnectorsQuery query, CancellationToken cancellationToken)
     {
         await _unitOfWork.BeginTransactionAsync();
 
         try
         {
-            var connector = await _connectorRepository.GetConnectorById(query.Id);
-            if (connector is null)
-            {
-                throw new ArgumentException($"A Connector with Id {query.Id} does not exist.");
-            }
-                
-            connector.IsValidForChange();
+            var connectors = await _connectorRepository.GetConnectors();
             
             await _unitOfWork.CommitAsync();
             
-            return Result<ConnectorEntity>.Success(connector);
+            return Result<IEnumerable<ConnectorEntity>>.Success(connectors);
         }
         catch (ArgumentException ex)
         {
             await _unitOfWork.RollbackAsync();
-            return Result<ConnectorEntity>.Failure(ex.Message);
+            return Result<IEnumerable<ConnectorEntity>>.Failure(ex.Message);
         }
         catch (Exception ex)
         {
             await _unitOfWork.RollbackAsync();
-            return Result<ConnectorEntity>.Failure(ex.Message);
+            return Result<IEnumerable<ConnectorEntity>>.Failure(ex.Message);
         }
     }
 }
