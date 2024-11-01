@@ -53,7 +53,7 @@ public class CreateConnectorHandler : IRequestHandler<CreateConnectorCommand, Re
                 throw new ArgumentException($"A ChargeStation with Id {command.ChargeStationId} does not exists.");
             }
 
-            var group = await _groupRepository.GetGroupById(command.ChargeStationId);
+            var group = await _groupRepository.GetGroupByChargeStationId(command.ChargeStationId);
             if (group is null)
             {
                 throw new ArgumentException($"A Group does not exists.");

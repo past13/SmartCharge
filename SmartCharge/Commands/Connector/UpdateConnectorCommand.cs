@@ -9,13 +9,15 @@ public class UpdateConnectorCommand : IRequest<Result<ConnectorEntity>>
 {
     public Guid Id { get; set; }
     public Guid ChargeStationId  { get; set; }
+    public Guid GroupId { get; set; }
     public string Name { get; set; }
     public int MaxCurrentInAmps { get; set; }
     
-    public UpdateConnectorCommand(Guid id, Guid chargeStationId, string name, int maxCurrentInAmps)
+    public UpdateConnectorCommand(Guid id, Guid chargeStationId, Guid groupId, string name, int maxCurrentInAmps)
     {
         Id = id;
         ChargeStationId = chargeStationId;
+        GroupId = groupId;
         Name = name;
         MaxCurrentInAmps = maxCurrentInAmps;
     }

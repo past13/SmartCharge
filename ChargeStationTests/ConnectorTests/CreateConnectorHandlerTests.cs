@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using SmartCharge.Commands.Connector;
 using SmartCharge.Domain.Entities;
@@ -33,18 +34,20 @@ public class CreateConnectorHandlerTests : DatabaseDependentTestBase
     public async Task Handle_ShouldReturnError_WhenConnectorNameExists()
     {
         var nameExist = "Test Connector";
-        
+
+        var groupEntity = GroupEntity.Create("TestGroup 1");
         var chargeStationEntity = ChargeStationEntity.Create("Test ChargeStation");
         var connector = ConnectorEntity.Create(nameExist, 1);
 
         chargeStationEntity.AddConnector(connector);
+        groupEntity.AddChargeStation(chargeStationEntity);
         
-        InMemoryDb.ChargeStations.Add(chargeStationEntity);
+        InMemoryDb.Groups.Add(groupEntity);
         await InMemoryDb.SaveChangesAsync();
         
         // Act
-        var exist = new CreateConnectorCommand(nameExist, 1, chargeStationEntity.Id);
-        var result = await _handler.Handle(exist, CancellationToken.None);
+        var command = new CreateConnectorCommand(nameExist, 1, chargeStationEntity.Id);
+        var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.False(result.IsSuccess);
@@ -54,19 +57,28 @@ public class CreateConnectorHandlerTests : DatabaseDependentTestBase
     [Fact]
     public async Task Handle_ShouldReturnSuccess_WhenConnectorNameNotExists()
     {
+        var groupEntity = GroupEntity.Create("TestGroup 1");
         var chargeStationEntity = ChargeStationEntity.Create("Test ChargeStation");
-        var connector = ConnectorEntity.Create("Test Connector", 1);
+        var connector = ConnectorEntity.Create("Test Connector 1", 1);
     
         chargeStationEntity.AddConnector(connector);
+        groupEntity.AddChargeStation(chargeStationEntity);
         
-        InMemoryDb.ChargeStations.Add(chargeStationEntity);
+        InMemoryDb.Groups.Add(groupEntity);
         await InMemoryDb.SaveChangesAsync();
         
         // Act
-        var notExist = new CreateConnectorCommand("Test ChargeStation 1", 1, chargeStationEntity.Id);
-        var result = await _handler.Handle(notExist, CancellationToken.None);
+        var command = new CreateConnectorCommand("Test Connector 2", 1, chargeStationEntity.Id);
+        var result = await _handler.Handle(command, CancellationToken.None);
     
+        var connectors = InMemoryDb.Groups
+            .Include(g => g.ChargeStations)
+            .First(g => g.Id == groupEntity.Id)
+            .ChargeStations.First(cs => cs.Id == chargeStationEntity.Id)
+            .Connectors;
+        
         // Assert
         Assert.True(result.IsSuccess);
+        Assert.Equal(2, connectors.Count);
     }
 }

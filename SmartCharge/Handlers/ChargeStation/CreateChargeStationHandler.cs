@@ -58,7 +58,7 @@ public class CreateChargeStationHandler : IRequestHandler<CreateChargeStationCom
                 chargeStation.AddConnector(connector);
             }
             
-            chargeStation.UpdateGroup(command.GroupId);
+            group.AddChargeStation(chargeStation);
             group.UpdateCapacity();
             
             await _chargeStationRepository.AddChargeStation(chargeStation);

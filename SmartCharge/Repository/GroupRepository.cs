@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using SmartCharge.DataLayer;
 using SmartCharge.Domain.DTOs;
 using SmartCharge.Domain.Entities;
-using SmartCharge.Domain.Response;
 
 namespace SmartCharge.Repository;
 
@@ -16,6 +15,7 @@ public interface IGroupRepository
     Task<bool> IsNameExist(string name);
     Task<GroupEntity> AddGroup(GroupEntity group);
     Task<GroupEntity?> GetGroupById(Guid id);
+    Task<GroupEntity?> GetGroupByChargeStationId(Guid chargeStationId);
     Task DeleteGroupById(Guid id);
     Task<IEnumerable<GroupDto>> GetAllGroups();
 }
@@ -67,7 +67,15 @@ public class GroupRepository : IGroupRepository
         return await _context.Groups
             .Include(g => g.ChargeStations)
             .ThenInclude(c => c.Connectors)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(g => g.Id == id);
+    }
+    
+    public async Task<GroupEntity> GetGroupByChargeStationId(Guid chargeStationId)
+    {
+        return await _context.Groups
+            .Include(g => g.ChargeStations)
+            .ThenInclude(c => c.Connectors)
+            .FirstOrDefaultAsync(g => g.ChargeStations.Any(cs => cs.Id == chargeStationId));
     }
     
     public async Task DeleteGroupById(Guid id)

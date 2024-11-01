@@ -14,14 +14,19 @@ namespace SmartCharge.Handlers.Connector;
 public class UpdateConnectorHandler : IRequestHandler<UpdateConnectorCommand, Result<ConnectorEntity>>
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IGroupRepository _groupRepository;
     private readonly IChargeStationRepository _chargeStationRepository;
     private readonly IConnectorRepository _connectorRepository;
 
     public UpdateConnectorHandler(
         IUnitOfWork unitOfWork,
+        IGroupRepository groupRepository,
+        IChargeStationRepository chargeStationRepository,
         IConnectorRepository connectorRepository)
     {
         _unitOfWork = unitOfWork;
+        _groupRepository = groupRepository;
+        _chargeStationRepository = chargeStationRepository;
         _connectorRepository = connectorRepository;
     }
     
@@ -43,32 +48,34 @@ public class UpdateConnectorHandler : IRequestHandler<UpdateConnectorCommand, Re
             {
                 throw new ArgumentException($"A Connector with Id {command.Id} does not exists.");
             }
-
-            var newChargeStation = await _chargeStationRepository.IsChargeStationExist(command.ChargeStationId);
-            if (!newChargeStation)
+            
+            var newChargeStation = await _chargeStationRepository.GetChargeStationById(command.ChargeStationId);
+            if (newChargeStation is null)
             {
                 throw new ArgumentException($"A ChargeStation with Id {command.ChargeStationId} does not exists.");
             }
             
-            var currentChargeStation = await _chargeStationRepository.GetChargeStationById(connector.ChargeStationId);
-            if (currentChargeStation?.Connectors.Count is 1)
+            var group = await _groupRepository.GetGroupByChargeStationId(connector.ChargeStationId);
+            if (group is null)
             {
-                throw new ArgumentException($"Connector can not be deleted ChargeStation required at least one connector.");
+                throw new ArgumentException($"A Group with ChargeStationId {connector.ChargeStationId} does not exists.");
             }
             
-            
-            
-            
-            
-            currentChargeStation?.RemoveConnector(connector);
+            if (connector.ChargeStationId != command.ChargeStationId)
+            {
+                connector.ChargeStation.RemoveConnector(connector);
+                newChargeStation.AddConnector(connector);
+                
+                group.UpdateCapacity();
+                newChargeStation.GroupEntity.UpdateCapacity();
+            }
             
             connector.Update(connectorName, command.MaxCurrentInAmps);
-            connector.UpdatechargeStation(command.ChargeStationId);
             
             await _unitOfWork.SaveChangesAsync();
             await _unitOfWork.CommitAsync();
             
-            return Result<ConnectorEntity>.Success(null);
+            return Result<ConnectorEntity>.Success(connector);
         }
         catch (ArgumentException ex)
         {

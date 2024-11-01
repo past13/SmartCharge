@@ -19,11 +19,12 @@ public class UpdateChargeStationHandler : IRequestHandler<UpdateChargeStationCom
 
     public UpdateChargeStationHandler(
         IUnitOfWork unitOfWork,
-        
+        IGroupRepository groupRepository,
         IChargeStationRepository chargeStationRepository
         )
     {
         _unitOfWork = unitOfWork;
+        _groupRepository = groupRepository;
         _chargeStationRepository = chargeStationRepository;
     }
     
@@ -46,17 +47,23 @@ public class UpdateChargeStationHandler : IRequestHandler<UpdateChargeStationCom
                 throw new ArgumentException($"A ChargeStation with Id {command.Id} does not exists.");
             }
             
-            var group = await _groupRepository.GetGroupById(command.GroupId);
-            if (group is null)
+            var newGroup = await _groupRepository.GetGroupById(command.GroupId);
+            if (newGroup is null)
             {
                 throw new ArgumentException($"A Group with Id {command.GroupId} does not exists.");
             }
-        
+
+            if (chargeStation.GroupId != newGroup.Id)
+            {
+                chargeStation.GroupEntity.RemoveChargeStation(chargeStation);
+                newGroup.AddChargeStation(chargeStation);
+                
+                chargeStation.GroupEntity.UpdateCapacity();
+                newGroup.UpdateCapacity();
+            }
+            
             chargeStation.UpdateName(chargeStationName);
-            chargeStation.UpdateGroup(group.Id);
-            
-            group.UpdateCapacity();
-            
+
             await _unitOfWork.SaveChangesAsync();
             await _unitOfWork.CommitAsync();
         

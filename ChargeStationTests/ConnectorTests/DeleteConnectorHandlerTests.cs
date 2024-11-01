@@ -12,6 +12,8 @@ public class DeleteConnectorHandlerTests : DatabaseDependentTestBase
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly Mock<IMapper> _mapper;
+    private readonly IGroupRepository _groupRepository;
+    
     private readonly IChargeStationRepository _chargeStationRepository;
     private readonly IConnectorRepository _connectorRepository;
 
@@ -23,8 +25,9 @@ public class DeleteConnectorHandlerTests : DatabaseDependentTestBase
         _mapper = new Mock<IMapper>();
         _connectorRepository = new ConnectorRepository(InMemoryDb, _mapper.Object);
         _chargeStationRepository = new ChargeStationRepository(InMemoryDb, _mapper.Object, _connectorRepository);
+        _groupRepository = new GroupRepository(InMemoryDb, _mapper.Object, _chargeStationRepository);
         
-        _handler = new DeleteConnectorHandler(_unitOfWork, _chargeStationRepository, _connectorRepository);
+        _handler = new DeleteConnectorHandler(_unitOfWork, _groupRepository, _chargeStationRepository, _connectorRepository);
     }
     
     [Fact]
@@ -70,7 +73,7 @@ public class DeleteConnectorHandlerTests : DatabaseDependentTestBase
     
         // Assert
         Assert.False(result.IsSuccess);
-        Assert.Contains("Connector can not be deleted ChargeStation required at least one connector.", result.Error);
+        Assert.Contains($"A ChargeStation Id {chargeStationEntity.Id} cannot have less than 1 connector.", result.Error);
     }
     
     [Fact]

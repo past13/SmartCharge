@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using SmartCharge.Commands.ChargeStation;
 using SmartCharge.Domain.Entities;
-using SmartCharge.Domain.Requests;
 using SmartCharge.Handlers.ChargeStation;
 using SmartCharge.Repository;
 using SmartCharge.UnitOfWork;
@@ -29,7 +28,7 @@ public class UpdateChargeStationHandlerTests : DatabaseDependentTestBase
         _chargeStationRepository = new ChargeStationRepository(InMemoryDb, _mapper.Object, _connectorRepository);
         _groupRepository = new GroupRepository(InMemoryDb, _mapper.Object, _chargeStationRepository);
         
-        _handler = new UpdateChargeStationHandler(_unitOfWork, _chargeStationRepository);
+        _handler = new UpdateChargeStationHandler(_unitOfWork, _groupRepository, _chargeStationRepository);
     }
     
     [Fact]
@@ -46,8 +45,8 @@ public class UpdateChargeStationHandlerTests : DatabaseDependentTestBase
         var chargeStationId = Guid.NewGuid();
         
         // Act
-        var notExist = new UpdateChargeStationCommand(chargeStationId, groupEntity.Id,"Test Group 1");
-        var result = await _handler.Handle(notExist, CancellationToken.None);
+        var command = new UpdateChargeStationCommand(chargeStationId, groupEntity.Id,"Test Group 1");
+        var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.False(result.IsSuccess);
@@ -55,11 +54,13 @@ public class UpdateChargeStationHandlerTests : DatabaseDependentTestBase
     }
     
     [Fact]
-    public async Task Handle_ShouldReturnSucces_WhenChargeStationExists()
+    public async Task Handle_ShouldReturnSuccess_WhenChargeStationExists()
     {
         var groupEntity = GroupEntity.Create("Test Group");
         var chargeStationEntity = ChargeStationEntity.Create("Test ChargeStation 1");
-        
+        var connectorEntity = ConnectorEntity.Create("Test Connector 1", 1);
+
+        chargeStationEntity.AddConnector(connectorEntity);
         groupEntity.AddChargeStation(chargeStationEntity);
         
         InMemoryDb.Groups.Add(groupEntity);
@@ -68,8 +69,8 @@ public class UpdateChargeStationHandlerTests : DatabaseDependentTestBase
         var expectedName = "Updated Test ChargeStation";
         
         // Act
-        var exist = new UpdateChargeStationCommand(chargeStationEntity.Id, groupEntity.Id, expectedName);
-        var result = await _handler.Handle(exist, CancellationToken.None);
+        var command = new UpdateChargeStationCommand(chargeStationEntity.Id, groupEntity.Id, expectedName);
+        var result = await _handler.Handle(command, CancellationToken.None);
     
         // Assert
         Assert.True(result.IsSuccess);
@@ -77,7 +78,7 @@ public class UpdateChargeStationHandlerTests : DatabaseDependentTestBase
     }
     
     [Fact]
-    public async Task Handle_ShouldReturnSuccess_WhenNewConnectorNotExistsEmptyConnectors()
+    public async Task Handle_ShouldReturnSuccess_UpdateExistChargeStationName()
     {
         var groupEntity = GroupEntity.Create("Test Group");
         var chargeStationEntity = ChargeStationEntity.Create("Test ChargeStation");
@@ -92,8 +93,8 @@ public class UpdateChargeStationHandlerTests : DatabaseDependentTestBase
         var expectedName = "Updated Test ChargeStation";
         
         // Act
-        var notExist = new UpdateChargeStationCommand(chargeStationEntity.Id, groupEntity.Id, expectedName);
-        var result = await _handler.Handle(notExist, CancellationToken.None);
+        var command = new UpdateChargeStationCommand(chargeStationEntity.Id, groupEntity.Id, expectedName);
+        var result = await _handler.Handle(command, CancellationToken.None);
     
         // Assert
         Assert.True(result.IsSuccess);
