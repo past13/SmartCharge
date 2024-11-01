@@ -43,11 +43,6 @@ public class ConnectorEntity : BaseEntity
         MaxCurrentInAmps = maxCurrentInAmps;
     }
 
-    public void UpdatechargeStation(Guid chargeStationId)
-    {
-        ChargeStationId = chargeStationId;
-    }
-
     public void UpdateConnectorNumber(int connectorNumber)
     {
         ConnectorNumber = connectorNumber;

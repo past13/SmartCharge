@@ -53,9 +53,17 @@ public class ChargeStationEntity : BaseEntity
             throw new ArgumentException($"A connector with ID {connector.Id} already exists in this charge station.");
         }
 
-        var nextConnectorNumber = _connectors.Count + 1;
-        connector.UpdateConnectorNumber(nextConnectorNumber);
+        var occupiedNumbers = _connectors
+            .Select(c => c.ConnectorNumber)
+            .ToHashSet();
         
+        var nextConnectorNumber = Enumerable.Range(1, 5).FirstOrDefault(n => !occupiedNumbers.Contains(n));
+        if (nextConnectorNumber == 0)
+        {
+            throw new InvalidOperationException("No available connector numbers.");
+        }
+        
+        connector.UpdateConnectorNumber(nextConnectorNumber);
         _connectors.Add(connector);
     }
 
@@ -63,7 +71,7 @@ public class ChargeStationEntity : BaseEntity
     {
         if (_connectors.Count <= 1)
         {
-            throw new ArgumentException("A charge station cannot have more than 5 connectors.");
+            throw new ArgumentException($"A ChargeStation Id {connector.ChargeStationId} cannot have less than 1 connector.");
         }
         
         _connectors.Remove(connector);
